@@ -1,0 +1,13 @@
+# Abaikan file Environment Variables
+.env
+.env.local
+backend/.env
+
+# Abaikan folder berat (Node Modules & Python Venv)
+node_modules/
+backend/venv/
+backend/__pycache__/
+frontend/node_modules/
+
+# Abaikan file sistem
+.DS_Store
