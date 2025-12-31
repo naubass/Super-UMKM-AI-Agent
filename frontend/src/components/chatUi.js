@@ -5,6 +5,18 @@ export function createChatBubble(role, text, taskType = null) {
     // Tambahkan animasi fade-in
     div.className = `flex gap-4 ${isUser ? 'flex-row-reverse' : ''} animate-fade-in`;
 
+    const renderTextWithImage = (rawText) => {
+        const imageRegex = /!\[(.*?)\]\((.*?)\)/g;
+        
+        let renderedHtml = rawText.replace(imageRegex, (match, alt, url) => {
+            const cleanUrl = url.trim();
+            
+            return `<div class="my-3 rounded-xl overflow-hidden shadow-sm border border-slate-200 group relative"><img src="${cleanUrl}" alt="${alt}" class="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" onerror="this.onerror=null; this.nextElementSibling.style.display='flex';" /><div class="hidden absolute inset-0 bg-slate-900/50 flex items-center justify-center text-white text-xs font-medium cursor-pointer" onclick="window.open('${cleanUrl}', '_blank')">🔍 Klik untuk perbesar</div></div>`;
+        });
+
+        return renderedHtml.replace(/\n/g, '<br>');
+    };
+
     // Logic Badge (Tampilan Label yang lebih rapi)
     let badge = '';
     if (!isUser) {
@@ -43,7 +55,7 @@ export function createChatBubble(role, text, taskType = null) {
         <div class="flex flex-col w-full max-w-[85%]">
             <div class="p-5 rounded-2xl ${bubbleStyle} text-[15px] leading-relaxed">
                 ${badge}
-                <div class="whitespace-pre-wrap font-medium">${text}</div>
+                <div class="whitespace-pre-wrap font-medium">${renderTextWithImage(text)}</div>
             </div>
             ${isUser ? '' : '<span class="text-[10px] text-gray-400 mt-1 ml-2">Baru saja</span>'}
         </div>

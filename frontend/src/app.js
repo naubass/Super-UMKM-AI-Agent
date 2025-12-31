@@ -17,21 +17,21 @@ form.addEventListener('submit', async (e) => {
     const message = input.value.trim();
     if (!message) return;
 
-    // 1. Tampilkan Pesan User
+    // Tampilkan Pesan User
     chatContainer.appendChild(createChatBubble('user', message));
     input.value = '';
     scrollToBottom();
 
-    // 2. Tampilkan Loading
+    // Tampilkan Loading
     const loader = createLoadingIndicator();
     chatContainer.appendChild(loader);
     scrollToBottom();
 
     try {
-        // 3. Panggil Backend
+        // Panggil Backend
         const data = await sendMessageToAI(message);
         
-        // 4. Hapus Loading & Tampilkan Balasan
+        // Hapus Loading & Tampilkan Balasan
         loader.remove();
         chatContainer.appendChild(createChatBubble('ai', data.response, data.task_type));
         
