@@ -1,49 +1,80 @@
-# backend/app/agents/image_tool.py
 import requests
-import urllib.parse
-import random
-import base64
+import time
+import os
 from app.core.config import settings
 
 def generate_image_url(prompt: str, is_poster: bool = False) -> str:
     """
-    Menerima Prompt Matang dan langsung mengirimnya.
-    PENTING: Jangan tambahkan enhanced_prompt lagi di sini agar teks tidak rusak.
+    Generate Image menggunakan REPLICATE (Flux 1.1 Pro) via Direct API.
+    Teknik ini MENGHINDARI error library 'pydantic' yang bentrok.
     """
-    api_key = settings.POLLINATIONS_API_KEY
     
-    if not api_key:
-        return "https://placehold.co/800x600?text=API+Key+Missing"
+    api_token = settings.REPLICATE_API_TOKEN 
+    
+    # Validasi Token
+    if not api_token:
+        print("❌ Error: REPLICATE_API_TOKEN belum diisi di .env")
+        return "https://placehold.co/800x600?text=Token+Replicate+Missing"
 
-    encoded_prompt = urllib.parse.quote(prompt)
-    seed = random.randint(0, 999999)
+    aspect_ratio = "3:4" if is_poster else "1:1"
+    
+    print(f"🚀 Replicate: Mengirim prompt ke Flux 1.1 Pro ({aspect_ratio})...")
 
-    if is_poster:
-        width = 768
-        height = 1024
-        print(f"🔄 Mengunduh desain POSTER...")
-    else:
-        width = 1024
-        height = 1024
-        print(f"🔄 Mengunduh desain logo...")
+    url = "https://api.replicate.com/v1/models/black-forest-labs/flux-1.1-pro/predictions"
+    
+    headers = {
+        "Authorization": f"Bearer {api_token}",
+        "Content-Type": "application/json"
+    }
 
-    url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width={width}&height={height}&seed={seed}&model=flux&nologo=true"
+    data = {
+        "input": {
+            "prompt": prompt,
+            "aspect_ratio": aspect_ratio,
+            "output_format": "jpg",
+            "output_quality": 90,
+            "safety_tolerance": 2
+        }
+    }
 
     try:
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "User-Agent": "Super-UMKM-Agent/1.0"
-        }
+        response = requests.post(url, json=data, headers=headers, timeout=30)
         
-        response = requests.get(url, headers=headers, timeout=120)
+        if response.status_code != 201:
+            print(f"❌ Gagal Start Replicate: {response.text}")
+            return "https://placehold.co/800x600?text=Error+Start+Replicate"
         
-        if response.status_code == 200:
-            image_data = base64.b64encode(response.content).decode('utf-8')
-            return f"data:image/jpeg;base64,{image_data}"
-        else:
-            print(f"❌ Error API: {response.text}")
-            return "https://placehold.co/800x600?text=Gagal+Load"
+        prediction = response.json()
+        get_url = prediction["urls"]["get"] 
+        
+        print("⏳ Menunggu Flux menggambar...", end="", flush=True)
+        
+        start_time = time.time()
+        while True:
+            status_response = requests.get(get_url, headers=headers, timeout=30)
+            status_data = status_response.json()
+            
+            status = status_data["status"]
+            
+            if status == "succeeded":
+                print(" ✅ Selesai!")
+                final_image_url = status_data["output"]
+                return final_image_url
+            
+            elif status == "failed":
+                print(f" ❌ Gagal! Error: {status_data.get('error')}")
+                return "https://placehold.co/800x600?text=Replicate+Failed"
+            
+            elif status == "canceled":
+                return "https://placehold.co/800x600?text=Replicate+Canceled"
+            
+            if time.time() - start_time > 120:
+                print(" ❌ Timeout!")
+                return "https://placehold.co/800x600?text=Timeout+Replicate"
+
+            print(".", end="", flush=True)
+            time.sleep(2)
 
     except Exception as e:
-        print(f"❌ Exception: {e}")
-        return "https://placehold.co/800x600?text=Server+Error"
+        print(f"\n❌ Exception System: {e}")
+        return "https://placehold.co/800x600?text=System+Error"

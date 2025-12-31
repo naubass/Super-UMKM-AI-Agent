@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     VERSION: str = "1.0.0"
     GROQ_API_KEY: str
     POLLINATIONS_API_KEY: str = ""
-    REPLICATE_API_TOKEN: str
+    REPLICATE_API_TOKEN: str = ""
 
     class Config:
         env_file = ".env"
