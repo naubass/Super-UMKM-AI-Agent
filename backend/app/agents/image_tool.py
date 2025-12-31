@@ -5,7 +5,7 @@ import random
 import base64
 from app.core.config import settings
 
-def generate_image_url(prompt: str) -> str:
+def generate_image_url(prompt: str, is_poster: bool = False) -> str:
     """
     Menerima Prompt Matang dan langsung mengirimnya.
     PENTING: Jangan tambahkan enhanced_prompt lagi di sini agar teks tidak rusak.
@@ -17,9 +17,17 @@ def generate_image_url(prompt: str) -> str:
 
     encoded_prompt = urllib.parse.quote(prompt)
     seed = random.randint(0, 999999)
-    url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1024&height=1024&seed={seed}&model=flux&nologo=true"
 
-    print(f"🔄 Mengunduh desain logo...")
+    if is_poster:
+        width = 768
+        height = 1024
+        print(f"🔄 Mengunduh desain POSTER...")
+    else:
+        width = 1024
+        height = 1024
+        print(f"🔄 Mengunduh desain logo...")
+
+    url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width={width}&height={height}&seed={seed}&model=flux&nologo=true"
 
     try:
         headers = {
@@ -27,7 +35,7 @@ def generate_image_url(prompt: str) -> str:
             "User-Agent": "Super-UMKM-Agent/1.0"
         }
         
-        response = requests.get(url, headers=headers, timeout=60)
+        response = requests.get(url, headers=headers, timeout=120)
         
         if response.status_code == 200:
             image_data = base64.b64encode(response.content).decode('utf-8')

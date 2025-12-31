@@ -37,38 +37,66 @@ def router_node(state: AgentState):
 
 def artist_node(state: AgentState):
     """
-    Artist Node dengan spesialisasi DESAIN LOGO UMKM.
+    Artist Node Pintar (Dual Mode):
+    1. Menganalisis apakah user meminta LOGO atau POSTER.
+    2. Meracik prompt visual yang sesuai dengan jenis permintaannya.
     """
     last_msg = state["messages"][-1].content
-    print(f"🎨 User minta Logo: {last_msg}")
+    print(f"🎨 Artist menerima tugas: {last_msg}")
 
-    prompt_engineer = """
-    Kamu adalah Brand Identity Designer profesional yang berspesialisasi dalam membuat LOGO UMKM yang modern dan minimalis.
-    Tugasmu adalah meracik prompt visual untuk AI Image Generator berdasarkan permintaan user.
-
-    ATURAN PERACIKAN PROMPT (WAJIB):
-    1.  **GAYA VISUAL:** Fokus pada 'minimalist logo', 'vector icon', 'flat design symbol', 'clean lines', dan 'professional branding'.
-    2.  **SIMBOLISME:** Ubah jenis usaha menjadi ikon yang kreatif tapi simpel. Contoh: 'Usaha Kopi' -> 'stylized coffee bean and cup icon combined'. 'Usaha Laundry' -> 'abstract hanger and water drop symbol'.
-    3.  **HINDARI:** Jangan gunakan kata 'photo', 'realistic', 'poster', atau banyak teks panjang.
-    4.  **BACKGROUND:** Selalu minta 'clean white background' atau 'solid neutral background' agar logonya menonjol.
-    5.  **OUTPUT:** Hanya berikan deskripsi prompt bahasa Inggris final yang fokus pada bentuk ikon logo tersebut.
+    classifier_prompt = """
+    Tugasmu adalah mengklasifikasikan permintaan user menjadi salah satu dari dua kategori: 'LOGO' atau 'POSTER'.
+    
+    - Pilih 'LOGO' jika user meminta: ikon, simbol, lambang, identitas brand, desain simpel untuk profil.
+    - Pilih 'POSTER' jika user meminta: iklan, promosi, brosur, flyer, menu, atau gambar yang membutuhkan layout teks dan visual kompleks.
+    
+    JIKA RAGU, pilih 'POSTER'.
+    Output HANYA satu kata: LOGO atau POSTER.
     """
+
+    classification_response = llm.invoke([
+        SystemMessage(content=classifier_prompt),
+        HumanMessage(content=last_msg)
+    ])
+    jenis_gambar = classification_response.content.strip().upper()
+    print(f"🤔 Klasifikasi Artist: {jenis_gambar}")
+
+    is_poster_mode = False
+
+    if "LOGO" in jenis_gambar:
+        is_poster_mode = False
+        prompt_engineer_system = """
+        Kamu adalah Brand Identity Designer profesional. Buat deskripsi visual untuk LOGO UMKM.
+        FOKUS: Minimalis, ikon vektor, simbol kreatif, garis bersih, professional branding.
+        HINDARI: Foto realistik, teks panjang, background ramai.
+        WAJIB: Akhiri prompt dengan 'clean solid background'.
+        Output HANYA deskripsi prompt bahasa Inggris.
+        """
+        reply_prefix = "Berikut adalah draf desain LOGO untuk Usaha Anda:"
+    else:
+        is_poster_mode = True
+        prompt_engineer_system = """
+        Kamu adalah Creative Director untuk desain iklan. Buat deskripsi visual untuk POSTER PROMOSI.
+        FOKUS: Layout iklan yang menarik, hierarki visual, elemen grafis modern, dan penempatan teks headline.
+        INSTRUKSI TEKS: Jika user meminta teks spesifik, instruksikan agar teks tersebut ditulis besar, tebal, dan jelas dalam desain (contoh: "with bold text 'PROMO' at the top").
+        Output HANYA deskripsi prompt bahasa Inggris.
+        """
+        reply_prefix = "Berikut adalah draf desain POSTER untuk Usaha Anda:"
     
     # Minta LLM meracik prompt logo
     design_prompt_response = llm.invoke([
-        SystemMessage(content=prompt_engineer),
+        SystemMessage(content=prompt_engineer_system),
         HumanMessage(content=f"Buatkan desain logo untuk: {last_msg}")
     ])
     
     final_prompt = design_prompt_response.content
-    print(f"✨ Prompt Logo Racikan AI: {final_prompt}")
+    print(f"✨ Prompt Visual Final ({jenis_gambar}): {final_prompt[:100]}...")
 
     # Kirim ke Tool Gambar
-    image_url = generate_image_url(final_prompt)
+    image_url = generate_image_url(final_prompt, is_poster=is_poster_mode)
 
     # Balas ke user
-    response_text = f"Berikut adalah draf desain logo untuk usaha Anda:\n\n![Desain Logo]({image_url})\n\nSaya menggunakan konsep visual: *{final_prompt[:100]}...* Semoga cocok dengan identitas bisnis Anda! ✨"
-
+    response_text = f"Berikut adalah draf desain creative untuk usaha Anda:\n\n![Desain Logo]({image_url})\n\nSaya menggunakan konsep visual: *{final_prompt[:100]}...* Semoga cocok dengan identitas bisnis Anda! ✨"
     return {"messages": [AIMessage(content=response_text)]}
 
 def researcher_node(state: AgentState):
