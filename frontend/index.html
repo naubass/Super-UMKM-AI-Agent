@@ -4,18 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UMKM Super Agent - Solusi AI Bisnis</title>
+    <script>
+        const session = localStorage.getItem('user_session');
+        if (!session) {
+            window.location.href = 'register.html';
+        }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        /* Chat Scrollbar */
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #CBD5E1; border-radius: 20px; }
-        
-        /* Background Pattern */
         .bg-grid-pattern {
             background-image: linear-gradient(to right, #e2e8f0 1px, transparent 1px),
             linear-gradient(to bottom, #e2e8f0 1px, transparent 1px);
@@ -26,8 +29,9 @@
 <body class="bg-slate-50 text-slate-800">
 
     <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <div class="flex items-center gap-3 cursor-pointer" onclick="window.scrollTo(0,0)">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center">
+            
+            <div class="flex items-center gap-3 cursor-pointer flex-shrink-0" onclick="window.scrollTo(0,0)">
                 <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
                         <path fill-rule="evenodd" d="M9.315 7.584C12.195 3.883 16.695 1.5 21.75 1.5a.75.75 0 01.75.75c0 5.056-2.383 9.555-6.084 12.436-3.118 2.424-7.146 3.814-11.416 3.814a.75.75 0 010-1.5c4.27 0 8.298-1.39 11.416-3.814a1 1 0 000-1.228l-.208-.208a1 1 0 00-1.228 0C11.516 14.868 7.488 16.258 3.218 16.258a.75.75 0 110-1.5c3.701 0 7.73-1.122 10.848-3.546.66-.514.82-1.46.368-2.146l-.208-.316a1.5 1.5 0 00-2.368-.158L9.315 7.584z" clip-rule="evenodd" />
@@ -35,169 +39,301 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg text-slate-900 leading-tight">Super Agent</h1>
-                    <p class="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Business AI</p>
+                    <p class="text-[10px] font-bold text-blue-600 uppercase tracking-widest">UMKM AI</p>
                 </div>
             </div>
 
-            <div class="hidden md:flex items-center gap-8">
-                <a href="#features" class="text-sm font-medium text-slate-500 hover:text-blue-600 transition">Fitur Unggulan</a>
-                <a href="#how-it-works" class="text-sm font-medium text-slate-500 hover:text-blue-600 transition">Cara Kerja</a>
+            <div class="hidden md:flex items-center gap-10 ml-16">
+                <a href="#workspace" class="text-sm font-medium text-slate-500 hover:text-blue-600 transition">Workspace</a>
+                <a href="#features" class="text-sm font-medium text-slate-500 hover:text-blue-600 transition">Fitur</a>
                 <a href="#contact" class="text-sm font-medium text-slate-500 hover:text-blue-600 transition">Hubungi Kami</a>
             </div>
 
-            <button class="hidden md:flex bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-full text-sm font-semibold transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                Mulai Gratis
-            </button>
+            <div class="hidden md:flex items-center ml-auto">
+                <button id="btn-auth" class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-full text-sm font-semibold transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    Mulai Gratis
+                </button>
+            </div>
+
         </div>
     </nav>
 
-    <section class="relative pt-32 pb-20 lg:pt-40 lg:pb-32 overflow-hidden">
+    <section class="relative pt-32 pb-16 lg:pt-40 lg:pb-24 overflow-hidden border-b border-slate-200">
         <div class="absolute inset-0 bg-grid-pattern opacity-[0.4] -z-10"></div>
         <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-blue-50 to-transparent -z-10"></div>
 
         <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
-            
             <div class="space-y-8 text-center lg:text-left">
                 <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold w-fit mx-auto lg:mx-0">
-                    <span class="relative flex h-2 w-2">
-                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                      <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-                    </span>
+                    <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span></span>
                     AI ENGINE V2.0 LIVE
                 </div>
-                
                 <h1 class="text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.15]">
                     Asisten Cerdas untuk <br>
                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600">Pertumbuhan Bisnis.</span>
                 </h1>
-                
                 <p class="text-lg text-slate-500 leading-relaxed max-w-xl mx-auto lg:mx-0">
                     Satu platform AI untuk membuat desain poster promosi, caption sosial media, hingga menangani komplain pelanggan secara otomatis.
                 </p>
-
-                <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                    <button onclick="fillInput('Buatkan poster promo Kopi Gula Aren yang estetik')" class="group flex items-center gap-3 px-6 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-blue-500 hover:shadow-md transition text-left">
-                        <span class="text-2xl group-hover:scale-110 transition">🎨</span>
-                        <div>
-                            <div class="text-sm font-bold text-slate-800">Coba Buat Poster</div>
-                            <div class="text-xs text-slate-400">Powered by Flux Pro</div>
-                        </div>
-                    </button>
-                    <button onclick="fillInput('Buatkan ide konten Instagram Story yang interaktif')" class="group flex items-center gap-3 px-6 py-4 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-purple-500 hover:shadow-md transition text-left">
-                        <span class="text-2xl group-hover:scale-110 transition">✨</span>
-                        <div>
-                            <div class="text-sm font-bold text-slate-800">Cari Ide Konten</div>
-                            <div class="text-xs text-slate-400">Analisa Tren Terbaru</div>
-                        </div>
-                    </button>
+                <div class="flex justify-center lg:justify-start">
+                    <a href="#workspace" class="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-500/30 transition transform hover:scale-105">
+                        Mulai Gunakan Sekarang ↓
+                    </a>
                 </div>
             </div>
 
-            <div class="relative w-full max-w-lg mx-auto lg:ml-auto">
-                <div class="absolute -top-6 -right-6 bg-white p-4 rounded-2xl shadow-xl border border-slate-100 hidden md:block animate-bounce" style="animation-duration: 3s;">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold">✓</div>
-                        <div>
-                            <p class="text-xs text-slate-400 font-medium">Status System</p>
-                            <p class="text-sm font-bold text-slate-800">Operational</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-[2rem] shadow-2xl border border-slate-200 overflow-hidden flex flex-col h-[600px] relative z-10">
-                    <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <div class="w-2 h-2 rounded-full bg-red-400"></div>
-                            <div class="w-2 h-2 rounded-full bg-yellow-400"></div>
-                            <div class="w-2 h-2 rounded-full bg-green-400"></div>
-                        </div>
-                        <span class="text-xs font-semibold text-slate-400">Live Demo Preview</span>
-                    </div>
-
-                    <div id="chat-container" class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-white">
-                        <div class="flex gap-4">
-                            <div class="w-9 h-9 rounded-lg bg-blue-600 flex flex-shrink-0 items-center justify-center text-white shadow-sm">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M16.5 7.5h-9v9h9v-9z" /></svg>
-                            </div>
-                            <div class="bg-slate-50 p-4 rounded-2xl rounded-tl-none border border-slate-100 text-sm text-slate-600 shadow-sm">
-                                Halo! Silakan coba fitur saya di samping kiri, atau ketik manual di bawah. Saya siap membantu! 🚀
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="p-4 bg-white border-t border-slate-100">
-                        <form id="chat-form" class="relative">
-                            <input type="text" id="user-input" 
-                                class="w-full bg-slate-50 text-slate-800 text-sm pl-5 pr-12 py-4 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 outline-none transition placeholder:text-slate-400 font-medium" 
-                                placeholder="Ketik perintah..." required autocomplete="off">
-                            <button type="submit" 
-                                class="absolute right-2 top-2 bottom-2 aspect-square bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-                                    <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
-                                </svg>
-                            </button>
-                        </form>
+            <div class="relative w-full max-w-lg mx-auto lg:ml-auto group cursor-pointer" onclick="window.location.href='#workspace'">
+                <div class="absolute -top-6 -right-6 bg-white p-3 rounded-2xl shadow-xl border border-slate-100 hidden md:flex items-center gap-3 animate-bounce z-20">
+                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold">✓</div>
+                    <div>
+                        <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Status System</p>
+                        <p class="text-sm font-bold text-slate-800">Ready to Work</p>
                     </div>
                 </div>
                 
+                <div class="bg-white rounded-[2rem] shadow-2xl border border-slate-200 overflow-hidden flex flex-col h-[500px] relative z-10 transform group-hover:-translate-y-2 transition duration-500">
+                    <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <div class="w-2.5 h-2.5 rounded-full bg-red-400"></div>
+                            <div class="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>
+                            <div class="w-2.5 h-2.5 rounded-full bg-green-400"></div>
+                        </div>
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Preview Mode</span>
+                    </div>
+                    <div class="p-6 space-y-4 opacity-50 grayscale group-hover:grayscale-0 group-hover:opacity-100 transition duration-500">
+                        <div class="flex gap-4">
+                            <div class="w-8 h-8 rounded-lg bg-blue-600 flex-shrink-0"></div>
+                            <div class="bg-slate-100 p-3 rounded-2xl rounded-tl-none w-3/4 h-24"></div>
+                        </div>
+                        <div class="flex gap-4 flex-row-reverse">
+                            <div class="w-8 h-8 rounded-lg bg-slate-800 flex-shrink-0"></div>
+                            <div class="bg-blue-50 p-3 rounded-2xl rounded-tr-none w-1/2 h-12"></div>
+                        </div>
+                        <div class="flex items-center justify-center h-32">
+                            <p class="text-sm font-bold text-blue-600">Klik untuk masuk ke Workspace</p>
+                        </div>
+                    </div>
+                </div>
                 <div class="absolute -inset-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-[2.5rem] blur-2xl opacity-20 -z-10"></div>
             </div>
         </div>
     </section>
 
-    <section id="features" class="py-20 bg-white border-t border-slate-100">
-        <div class="max-w-7xl mx-auto px-6">
+    <section id="workspace" class="py-12 bg-slate-100 min-h-screen">
+        <div class="max-w-[1600px] mx-auto px-4 h-[85vh] flex gap-6">
+            
+            <aside class="hidden lg:flex flex-col w-80 bg-white rounded-3xl shadow-xl border border-slate-200 p-6 overflow-y-auto">
+                <div class="mb-8">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Quick Actions</h3>
+                    <div class="space-y-3">
+                        <button onclick="fillInput('Buatkan poster promo Kopi Gula Aren yang estetik')" class="w-full text-left p-4 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl transition group flex items-start gap-3">
+                            <span class="text-xl">🎨</span>
+                            <div>
+                                <span class="block text-sm font-bold text-blue-800">Buat Poster</span>
+                                <span class="block text-[10px] text-blue-600/70">Graphic Design Generator</span>
+                            </div>
+                        </button>
+                        <button onclick="fillInput('Buatkan ide konten Instagram Story yang interaktif')" class="w-full text-left p-4 bg-purple-50 hover:bg-purple-100 border border-purple-100 rounded-xl transition group flex items-start gap-3">
+                            <span class="text-xl">✨</span>
+                            <div>
+                                <span class="block text-sm font-bold text-purple-800">Ide Konten</span>
+                                <span class="block text-[10px] text-purple-600/70">Social Media Brainstorm</span>
+                            </div>
+                        </button>
+                        <button onclick="fillInput('Balas komplain customer: Makanannya asin banget!')" class="w-full text-left p-4 bg-orange-50 hover:bg-orange-100 border border-orange-100 rounded-xl transition group flex items-start gap-3">
+                            <span class="text-xl">🛡️</span>
+                            <div>
+                                <span class="block text-sm font-bold text-orange-800">Handle Komplain</span>
+                                <span class="block text-[10px] text-orange-600/70">Professional CS</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-auto pt-6 border-t border-slate-100">
+                    <div class="p-4 bg-slate-900 rounded-2xl text-white relative overflow-hidden">
+                        <div class="relative z-10">
+                            <p class="text-xs text-slate-400 mb-1">Status Token</p>
+                            <p class="font-bold text-lg">Unlimited</p>
+                        </div>
+                        <div class="absolute top-0 right-0 w-16 h-16 bg-blue-500 rounded-full blur-xl opacity-30 -mr-4 -mt-4"></div>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="flex-1 bg-white rounded-3xl shadow-xl border border-slate-200 flex flex-col overflow-hidden relative">
+                <div class="bg-white px-8 py-5 border-b border-slate-100 flex justify-between items-center z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" /></svg>
+                        </div>
+                        <div>
+                            <h2 class="font-bold text-slate-800">Workspace</h2>
+                            <p class="text-xs text-slate-500">AI Active & Ready</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chat-container" class="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar bg-slate-50/50">
+                    <div class="flex gap-4 animate-fade-in">
+                        <div class="w-10 h-10 rounded-xl bg-blue-600 flex flex-shrink-0 items-center justify-center text-white shadow-sm">
+                            <span class="text-xl">🤖</span>
+                        </div>
+                        <div class="bg-white p-5 rounded-2xl rounded-tl-none border border-slate-200 text-slate-700 shadow-sm max-w-[80%]">
+                            <p class="font-medium">Halo! Selamat datang di Workspace. 👋</p>
+                            <p class="mt-2 text-sm text-slate-500">Pilih menu di sebelah kiri untuk memulai, atau ketik perintah Anda di bawah. Saya bisa buat poster, caption, dan analisa bisnis.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 bg-white border-t border-slate-200">
+                    <form id="chat-form" class="relative max-w-4xl mx-auto">
+                        <div class="relative flex items-center shadow-lg rounded-2xl">
+                            <input type="text" id="user-input" 
+                                class="w-full bg-white text-slate-800 text-base pl-6 pr-16 py-5 rounded-2xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition placeholder:text-slate-400 font-medium" 
+                                placeholder="Ketik ide atau perintah Anda disini..." required autocomplete="off">
+                            
+                            <button type="submit" 
+                                class="absolute right-3 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition duration-200">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                                    <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="text-center text-[11px] text-slate-400 mt-3 font-medium">
+                            Powered by Llama 3 & Flux Pro.
+                        </p>
+                    </form>
+                </div>
+            </main>
+        </div>
+    </section>
+
+    <section id="features" class="py-24 bg-white relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
             <div class="text-center max-w-2xl mx-auto mb-16">
-                <h2 class="text-3xl font-bold text-slate-900 mb-4">Fitur Lengkap untuk UMKM</h2>
-                <p class="text-slate-500">Kami menggabungkan teknologi AI terbaik (Llama 3 & Flux Pro) untuk memberikan hasil kelas enterprise bagi bisnis Anda.</p>
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold w-fit mb-4">
+                    FITUR UNGGULAN
+                </div>
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4 tracking-tight">Solusi Lengkap dalam Satu Platform</h2>
+                <p class="text-slate-500 text-lg">Tidak perlu langganan banyak tools. Cukup satu aplikasi untuk semua kebutuhan marketing & operasional Anda.</p>
             </div>
 
             <div class="grid md:grid-cols-3 gap-8">
-                <div class="p-8 rounded-2xl bg-slate-50 border border-slate-100 hover:border-blue-200 transition group hover:bg-white hover:shadow-xl">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 text-2xl mb-6 group-hover:scale-110 transition">🎨</div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Desain Grafis AI</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">Buat poster promosi, logo, dan materi visual yang estetik hanya dengan deskripsi teks sederhana.</p>
+                <div class="p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:border-blue-200 hover:bg-white hover:shadow-xl transition-all duration-300 group cursor-default">
+                    <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 text-3xl mb-6 group-hover:scale-110 transition duration-300 shadow-sm">🎨</div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">AI Graphic Designer</h3>
+                    <p class="text-slate-500 leading-relaxed">Buat poster promosi, banner, dan logo profesional dalam hitungan detik. Menggunakan engine <strong>Flux Pro</strong> untuk hasil fotorealistik.</p>
                 </div>
-                <div class="p-8 rounded-2xl bg-slate-50 border border-slate-100 hover:border-purple-200 transition group hover:bg-white hover:shadow-xl">
-                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 text-2xl mb-6 group-hover:scale-110 transition">✍️</div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Copywriting Otomatis</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">Bingung bikin caption? AI akan membuatkan copywriting yang menarik dan persuasif untuk sosmed Anda.</p>
+                <div class="p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:border-purple-200 hover:bg-white hover:shadow-xl transition-all duration-300 group cursor-default">
+                    <div class="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 text-3xl mb-6 group-hover:scale-110 transition duration-300 shadow-sm">✍️</div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Smart Copywriting</h3>
+                    <p class="text-slate-500 leading-relaxed">Kehabisan ide caption? Biarkan <strong>Llama 3</strong> menulis deskripsi produk, skrip video TikTok, dan artikel blog yang SEO-friendly.</p>
                 </div>
-                <div class="p-8 rounded-2xl bg-slate-50 border border-slate-100 hover:border-orange-200 transition group hover:bg-white hover:shadow-xl">
-                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 text-2xl mb-6 group-hover:scale-110 transition">🛡️</div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Customer Service</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">Tangani komplain pelanggan dengan respon yang cepat, empatik, dan profesional tanpa emosi.</p>
+                <div class="p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:border-orange-200 hover:bg-white hover:shadow-xl transition-all duration-300 group cursor-default">
+                    <div class="w-14 h-14 bg-orange-100 rounded-2xl flex items-center justify-center text-orange-600 text-3xl mb-6 group-hover:scale-110 transition duration-300 shadow-sm">🛡️</div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Customer Service AI</h3>
+                    <p class="text-slate-500 leading-relaxed">Analisa sentimen pelanggan dan buat draf balasan komplain yang empatik, profesional, dan menenangkan hati customer.</p>
                 </div>
             </div>
         </div>
+        <div class="absolute top-1/2 left-0 -translate-y-1/2 w-96 h-96 bg-blue-50 rounded-full blur-3xl opacity-50 -z-10"></div>
+        <div class="absolute bottom-0 right-0 w-96 h-96 bg-purple-50 rounded-full blur-3xl opacity-50 -z-10"></div>
     </section>
 
-    <section id="contact" class="bg-slate-900 py-20 text-white overflow-hidden relative">
-        <div class="absolute top-0 right-0 w-96 h-96 bg-blue-600 rounded-full blur-3xl opacity-20 transform translate-x-1/2 -translate-y-1/2"></div>
+    <section id="contact" class="py-24 bg-slate-900 text-white relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600 rounded-full blur-[128px] opacity-20 transform translate-x-1/3 -translate-y-1/3"></div>
+        <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-600 rounded-full blur-[128px] opacity-20 transform -translate-x-1/3 translate-y-1/3"></div>
         
         <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
-            <h2 class="text-3xl md:text-4xl font-bold mb-6">Siap Mengembangkan Bisnis?</h2>
-            <p class="text-slate-400 mb-10 max-w-xl mx-auto">Bergabunglah dengan ribuan UMKM yang telah menghemat waktu dan biaya desain dengan Super Agent AI.</p>
+            <h2 class="text-4xl md:text-5xl font-extrabold mb-6 tracking-tight">Siap Mengembangkan Bisnis?</h2>
+            <p class="text-slate-300 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
+                Bergabunglah dengan ribuan UMKM modern yang telah menghemat waktu operasional dan biaya desain dengan Super Agent AI.
+            </p>
             
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <button class="px-8 py-4 bg-blue-600 hover:bg-blue-500 rounded-full font-bold transition shadow-lg hover:shadow-blue-500/50 w-full sm:w-auto">
+                <button class="px-8 py-4 bg-blue-600 hover:bg-blue-500 rounded-full font-bold transition shadow-lg shadow-blue-500/30 w-full sm:w-auto transform hover:-translate-y-1">
                     Hubungi Sales
                 </button>
-                <button class="px-8 py-4 bg-transparent border border-slate-700 hover:bg-slate-800 rounded-full font-bold transition w-full sm:w-auto">
+                <button class="px-8 py-4 bg-transparent border border-slate-700 hover:bg-slate-800 rounded-full font-bold transition w-full sm:w-auto hover:border-slate-600">
                     Pelajari Dokumentasi
                 </button>
             </div>
-            
-            <div class="mt-20 pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500">
-                <p>&copy; 2025 Super UMKM Agent. All rights reserved.</p>
-                <div class="flex gap-6 mt-4 md:mt-0">
-                    <a href="#" class="hover:text-white transition">Privacy Policy</a>
-                    <a href="#" class="hover:text-white transition">Terms of Service</a>
-                </div>
-            </div>
         </div>
     </section>
 
+    <footer class="bg-white py-12 border-t border-slate-200">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M9.315 7.584C12.195 3.883 16.695 1.5 21.75 1.5a.75.75 0 01.75.75c0 5.056-2.383 9.555-6.084 12.436-3.118 2.424-7.146 3.814-11.416 3.814a.75.75 0 010-1.5c4.27 0 8.298-1.39 11.416-3.814a1 1 0 000-1.228l-.208-.208a1 1 0 00-1.228 0C11.516 14.868 7.488 16.258 3.218 16.258a.75.75 0 110-1.5c3.701 0 7.73-1.122 10.848-3.546.66-.514.82-1.46.368-2.146l-.208-.316a1.5 1.5 0 00-2.368-.158L9.315 7.584z" clip-rule="evenodd" /></svg>
+                </div>
+                <span class="font-bold text-slate-900">Super Agent</span>
+            </div>
+            
+            <p class="text-slate-500 text-sm">© 2025 UMKM Super Agent. All rights reserved.</p>
+            
+            <div class="flex gap-6 text-sm font-medium text-slate-500">
+                <a href="#" class="hover:text-blue-600 transition">Privacy Policy</a>
+                <a href="#" class="hover:text-blue-600 transition">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
     <script type="module" src="/src/app.js"></script>
+    <script>
+        window.fillInput = (text) => {
+            const input = document.getElementById('user-input');
+            if(input) {
+                input.value = text;
+                input.focus();
+                document.getElementById('workspace').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const session = localStorage.getItem('user_session');
+            const authButton = document.getElementById('btn-auth');
+            const authContainer = authButton ? authButton.parentElement : null;
+
+            if (session) {
+                const user = JSON.parse(session);
+                
+                // Sembunyikan tombol aslinya
+                if (authButton) authButton.style.display = 'none';
+
+                // Buat elemen User Profile
+                const userDiv = document.createElement('div');
+                userDiv.className = "flex items-center gap-4"; // Hapus ml-auto dari sini karena parentnya sudah ml-auto
+                userDiv.innerHTML = `
+                    <div class="text-right">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Hello,</p>
+                        <p class="text-sm font-bold text-slate-800">${user.name}</p>
+                    </div>
+                    <button onclick="logout()" class="w-9 h-9 rounded-full bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center transition border border-red-100" title="Logout">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M7.5 3.75A1.5 1.5 0 006 5.25v13.5a1.5 1.5 0 001.5 1.5h6a1.5 1.5 0 001.5-1.5V15a.75.75 0 011.5 0v3.75a3 3 0 01-3 3h-6a3 3 0 01-3-3V5.25a3 3 0 013-3h6a3 3 0 013 3V9A.75.75 0 0115 9V5.25a1.5 1.5 0 00-1.5-1.5h-6zm10.72 4.72a.75.75 0 011.06 0l3 3a.75.75 0 010 1.06l-3 3a.75.75 0 11-1.06-1.06l1.72-1.72H9a.75.75 0 010-1.5h10.94l-1.72-1.72a.75.75 0 010-1.06z" clip-rule="evenodd" /></svg>
+                    </button>
+                `;
+                
+                // Masukkan ke dalam container yang sama dengan tombol
+                if(authContainer) {
+                    authContainer.appendChild(userDiv);
+                }
+
+            } else {
+                if (authButton) {
+                    authButton.innerText = "Login / Daftar";
+                    authButton.onclick = () => window.location.href = 'login.html';
+                }
+            }
+        });
+
+        window.logout = () => {
+            if(confirm('Yakin ingin keluar?')) {
+                localStorage.removeItem('user_session');
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
 </body>
 </html>

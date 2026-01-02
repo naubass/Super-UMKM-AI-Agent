@@ -14,25 +14,48 @@ llm = ChatGroq(
 )
 
 def router_node(state: AgentState):
-    """Supervisor: Menentukan jenis tugas."""
+    """Supervisor: Menentukan jenis tugas (Updated Logic)."""
     messages = state["messages"]
     last_msg = messages[-1].content 
 
     prompt = """
-    1. 'GAMBAR' (Jika minta dibuatkan foto, poster, visual, gambar produk).
-    2. 'KONTEN' (Jika minta ide posting teks, caption, tren sosmed).
-    3. 'REVIEW' (Jika membalas komplain, testimoni, ulasan).
-    4. 'UMUM' (Chat biasa).
+    Kamu adalah AI Router. Tugasmu mengkategorikan niat (intent) user.
     
+    ANALISA NIAT USER DENGAN TELITI:
+
+    1. 'GAMBAR' 
+       - Pilih ini JIKA user minta visual: "buatkan poster", "logo", "gambar", "desain banner".
+
+    2. 'KONTEN' 
+       - Pilih ini JIKA user minta DIBUATKAN TEKS JADI/NASKAH.
+       - Contoh: "buatkan caption IG", "tuliskan script tiktok", "ide status WA".
+       - Ciri: User ingin hasil berupa teks kreatif siap posting.
+
+    3. 'REVIEW' 
+       - Pilih ini JIKA user minta membalas ulasan/komplain: "balas review bintang 1", "jawab komplain customer".
+
+    4. 'UMUM' 
+       - Pilih ini untuk KONSULTASI, TIPS, STRATEGI, atau OBROLAN BIASA.
+       - Contoh: "Tips agar warung ramai", "Cara marketing efektif", "Apa itu HPP", "Halo", "Siapa kamu".
+       - PENTING: Jika user minta ILMU/SARAN, itu masuk UMUM, bukan KONTEN.
+
     Output HANYA satu kata: GAMBAR, KONTEN, REVIEW, atau UMUM.
     """
     
     response = llm.invoke([SystemMessage(content=prompt), HumanMessage(content=last_msg)])
-    kategori = response.content.strip().upper()
+    raw_kategori = response.content.strip().upper()
 
-    if kategori not in ["GAMBAR", "KONTEN", "REVIEW", "UMUM"]:
+    # Cleaning output (jaga-jaga kalau LLM jawab panjang)
+    if "GAMBAR" in raw_kategori:
+        kategori = "GAMBAR"
+    elif "KONTEN" in raw_kategori:
+        kategori = "KONTEN"
+    elif "REVIEW" in raw_kategori:
+        kategori = "REVIEW"
+    else:
         kategori = "UMUM"
-
+    
+    print(f"🔀 Router Decision: {kategori} (Input: {last_msg})") # Print untuk debug di terminal
     return {"tugas_saat_ini": kategori}
 
 def artist_node(state: AgentState):
