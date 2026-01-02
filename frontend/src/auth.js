@@ -1,6 +1,6 @@
 const API_URL = "http://localhost:8000/api"; // Sesuaikan port backend Anda
 
-// 1. Logic untuk LOGIN
+// Logic untuk LOGIN
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
@@ -23,13 +23,13 @@ if (loginForm) {
             const data = await response.json();
 
             if (response.ok) {
-                // Simpan data user ke Browser (LocalStorage)
+                localStorage.setItem('access_token', data.access_token);
+
                 localStorage.setItem('user_session', JSON.stringify({
-                    id: data.user_id,
-                    name: data.name
+                    id: data.user_info.id,      
+                    name: data.user_info.name   
                 }));
                 
-                // Redirect ke Dashboard
                 alert("Login Berhasil! Mengalihkan...");
                 window.location.href = "index.html";
             } else {
@@ -45,7 +45,7 @@ if (loginForm) {
     });
 }
 
-// 2. Logic untuk REGISTER
+// Logic untuk REGISTER
 const registerForm = document.getElementById('registerForm');
 if (registerForm) {
     registerForm.addEventListener('submit', async (e) => {

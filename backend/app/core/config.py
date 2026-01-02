@@ -7,6 +7,10 @@ class Settings(BaseSettings):
     POLLINATIONS_API_KEY: str = ""
     REPLICATE_API_TOKEN: str = ""
 
+    SECRET_KEY: str = "rahasia1234_jangan_kasih_tau_siapa_siapa"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
+
     class Config:
         env_file = ".env"
 
