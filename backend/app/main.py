@@ -13,10 +13,16 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from app.core.config import settings
 from datetime import timedelta
+from fastapi.staticfiles import StaticFiles
+import os
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title=settings.PROJECT_NAME)
+
+os.makedirs("static/images", exist_ok=True)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.add_middleware(
     CORSMiddleware,
