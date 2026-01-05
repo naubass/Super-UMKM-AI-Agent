@@ -33,3 +33,35 @@
 .animate-fade-in-up {
     animation: fadeInUp 0.6s ease-out forwards;
 }
+
+/* --- FIX WALL OF TEXT (Agar Caption Rapi) --- */
+.bot-content {
+    font-size: 0.95rem;
+    line-height: 1.7; /* Jarak antar baris */
+}
+
+/* Paksa setiap paragraf punya jarak bawah */
+.bot-content p {
+    margin-bottom: 1.25rem !important; 
+}
+
+/* Paragraf terakhir tidak perlu jarak */
+.bot-content p:last-child {
+    margin-bottom: 0;
+}
+
+/* Styling List (Bullet points) */
+.bot-content ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+    margin-bottom: 1.25rem;
+}
+
+.bot-content li {
+    margin-bottom: 0.5rem;
+}
+
+.bot-content strong {
+    font-weight: 700;
+    color: #1a202c;
+}

@@ -12,6 +12,8 @@ from app.agents.graph import umkm_graph
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from app.core.config import settings
+from app.models.history import ChatHistory
+from sqlalchemy import desc
 from datetime import timedelta
 from fastapi.staticfiles import StaticFiles
 import os
@@ -91,15 +93,47 @@ def login_user(user: UserLogin, db: Session = Depends(get_db)):
         }
     }
 
+@app.get("/api/history")
+def get_chat_history(
+    db: Session = Depends(get_db), 
+    current_user: User = Depends(get_current_user)
+):
+    # Ambil chat user ini
+    # Kita pakai .asc() agar chat terlama ada di atas (seperti WhatsApp)
+    chats = db.query(ChatHistory)\
+        .filter(ChatHistory.user_id == current_user.id)\
+        .order_by(ChatHistory.created_at.asc())\
+        .all()
+    
+    return chats
+
 @app.post("/api/chat", response_model=ChatResponse)
-async def chat_endpoint(request: ChatRequest, current_user: User = Depends(get_current_user)):
+async def chat_endpoint(request: ChatRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     try:
+        user_msg = ChatHistory(user_id=current_user.id, role="user", content=request.message)
+        db.add(user_msg)
+        db.commit()
+
         inputs = {"messages": [HumanMessage(content=request.message)]}
         result = umkm_graph.invoke(inputs)
 
         bot_response = result["messages"][-1].content
         task_type = result.get("tugas_saat_ini", "UMUM")
 
+        bot_msg = ChatHistory(user_id=current_user.id, role="assistant", content=bot_response)
+        db.add(bot_msg)
+        db.commit()
+
         return ChatResponse(response=bot_response, task_type=task_type)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.delete("/api/history/reset")
+def reset_chat_history(
+    db: Session = Depends(get_db), 
+    current_user: User = Depends(get_current_user)
+):
+    # Hapus semua chat milik user yang sedang login
+    db.query(ChatHistory).filter(ChatHistory.user_id == current_user.id).delete()
+    db.commit()
+    return {"message": "Riwayat chat berhasil dihapus"}
