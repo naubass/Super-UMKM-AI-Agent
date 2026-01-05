@@ -12,7 +12,8 @@ from app.agents.graph import umkm_graph
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from app.core.config import settings
-from app.models.history import ChatHistory
+from app.models.history import ChatHistory, ChatSession
+from pydantic import BaseModel
 from sqlalchemy import desc
 from datetime import timedelta
 from fastapi.staticfiles import StaticFiles
@@ -35,6 +36,10 @@ app.add_middleware(
 )
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/login")
+
+class ChatRequest(BaseModel):
+    message: str
+    session_id: int
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
@@ -98,8 +103,6 @@ def get_chat_history(
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_user)
 ):
-    # Ambil chat user ini
-    # Kita pakai .asc() agar chat terlama ada di atas (seperti WhatsApp)
     chats = db.query(ChatHistory)\
         .filter(ChatHistory.user_id == current_user.id)\
         .order_by(ChatHistory.created_at.asc())\
@@ -107,10 +110,41 @@ def get_chat_history(
     
     return chats
 
+@app.post("/api/sessions")
+def create_session(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    new_session = ChatSession(user_id=current_user.id, title="Percakapan Baru")
+    db.add(new_session)
+    db.commit()
+    db.refresh(new_session)
+
+    return {"id": new_session.id, "title": new_session.title}
+
+@app.get("/api/sessions")
+def get_session(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return db.query(ChatSession).filter(ChatSession.user_id == current_user.id).order_by(ChatSession.created_at.desc()).all()
+
+@app.get("/api/history/{session_id}")
+def get_history_by_session(session_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    session = db.query(ChatSession).filter(ChatSession.id == session_id, ChatSession.user_id == current_user.id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    return db.query(ChatHistory).filter(ChatHistory.session_id == session_id).order_by(ChatHistory.created_at.asc()).all()
+
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    # check session
+    session = db.query(ChatSession).filter(ChatSession.id == request.session_id, ChatSession.user_id == current_user.id).first()
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
     try:
-        user_msg = ChatHistory(user_id=current_user.id, role="user", content=request.message)
+        if session.title == "Percakapan Baru":
+            short_litle = (request.message[:30] + '..') if len(request.message) > 30 else request.message
+            session.title = short_litle
+            db.add(session)
+
+        user_msg = ChatHistory(session_id=request.session_id, role="user", content=request.message)
         db.add(user_msg)
         db.commit()
 
@@ -120,7 +154,7 @@ async def chat_endpoint(request: ChatRequest, current_user: User = Depends(get_c
         bot_response = result["messages"][-1].content
         task_type = result.get("tugas_saat_ini", "UMUM")
 
-        bot_msg = ChatHistory(user_id=current_user.id, role="assistant", content=bot_response)
+        bot_msg = ChatHistory(session_id=request.session_id, role="assistant", content=bot_response)
         db.add(bot_msg)
         db.commit()
 

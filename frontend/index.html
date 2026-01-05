@@ -5,9 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UMKM Super Agent - Solusi AI Bisnis</title>
     <script>
+        const token = localStorage.getItem('access_token');
         const session = localStorage.getItem('user_session');
-        if (!session) {
-            window.location.href = 'register.html';
+        
+        if (!token || !session) {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        try {
+            JSON.parse(session);
+        } catch (e) {
+            localStorage.clear();
+            window.location.href = 'login.html';
         }
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,7 +40,6 @@
 
     <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 transition-all duration-300">
         <div class="max-w-7xl mx-auto px-6 h-20 flex items-center">
-            
             <div class="flex items-center gap-3 cursor-pointer flex-shrink-0" onclick="window.scrollTo(0,0)">
                 <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
@@ -49,12 +58,11 @@
                 <a href="#contact" class="text-sm font-medium text-slate-500 hover:text-blue-600 transition">Hubungi Kami</a>
             </div>
 
-            <div class="hidden md:flex items-center ml-auto">
+            <div class="hidden md:flex items-center ml-auto" id="auth-container">
                 <button id="btn-auth" class="bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-full text-sm font-semibold transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                     Mulai Gratis
                 </button>
             </div>
-
         </div>
     </nav>
 
@@ -119,100 +127,80 @@
         </div>
     </section>
 
-    <section id="workspace" class="py-12 bg-slate-100 min-h-screen">
-        <div class="max-w-[1600px] mx-auto px-4 h-[85vh] flex gap-6">
+    <section id="workspace" class="h-screen bg-slate-100 flex flex-col pt-20">
+        
+        <div class="text-center py-4 px-4 flex-shrink-0">
+             <h2 class="text-2xl font-bold text-slate-800">Workspace AI</h2>
+             <p class="text-slate-500 text-sm">Kelola semua percakapan bisnis Anda di sini</p>
+        </div>
+
+        <div class="max-w-[1600px] mx-auto px-4 w-full flex-1 flex pb-4 overflow-hidden">
             
-            <aside class="hidden lg:flex flex-col w-80 bg-white rounded-3xl shadow-xl border border-slate-200 p-6 overflow-y-auto">
-                <div class="mb-8">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Quick Actions</h3>
-                    <div class="space-y-3">
-                        <button onclick="fillInput('Buatkan poster promo Kopi Gula Aren yang estetik')" class="w-full text-left p-4 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl transition group flex items-start gap-3">
-                            <span class="text-xl">🎨</span>
-                            <div>
-                                <span class="block text-sm font-bold text-blue-800">Buat Poster</span>
-                                <span class="block text-[10px] text-blue-600/70">Graphic Design Generator</span>
-                            </div>
-                        </button>
-                        <button onclick="fillInput('Buatkan ide konten Instagram Story yang interaktif')" class="w-full text-left p-4 bg-purple-50 hover:bg-purple-100 border border-purple-100 rounded-xl transition group flex items-start gap-3">
-                            <span class="text-xl">✨</span>
-                            <div>
-                                <span class="block text-sm font-bold text-purple-800">Ide Konten</span>
-                                <span class="block text-[10px] text-purple-600/70">Social Media Brainstorm</span>
-                            </div>
-                        </button>
-                        <button onclick="fillInput('Balas komplain customer: Makanannya asin banget!')" class="w-full text-left p-4 bg-orange-50 hover:bg-orange-100 border border-orange-100 rounded-xl transition group flex items-start gap-3">
-                            <span class="text-xl">🛡️</span>
-                            <div>
-                                <span class="block text-sm font-bold text-orange-800">Handle Komplain</span>
-                                <span class="block text-[10px] text-orange-600/70">Professional CS</span>
-                            </div>
+            <div class="w-full h-full bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col md:flex-row">
+                
+                <aside class="w-full md:w-72 bg-slate-900 text-slate-300 flex flex-col border-r border-slate-800 flex-shrink-0 z-10">
+                    <div class="p-4 border-b border-slate-800">
+                        <button onclick="createNewSession()" class="w-full bg-blue-600 hover:bg-blue-500 text-white p-3 rounded-xl flex items-center justify-center gap-2 transition shadow-lg shadow-blue-900/20 font-semibold group">
+                            <span class="text-xl group-hover:rotate-90 transition">+</span> 
+                            Percakapan Baru
                         </button>
                     </div>
-                </div>
 
-                <div class="mt-auto pt-6 border-t border-slate-100">
-                    <div class="p-4 bg-slate-900 rounded-2xl text-white relative overflow-hidden">
-                        <div class="relative z-10">
-                            <p class="text-xs text-slate-400 mb-1">Status Token</p>
-                            <p class="font-bold text-lg">Unlimited</p>
-                        </div>
-                        <div class="absolute top-0 right-0 w-16 h-16 bg-blue-500 rounded-full blur-xl opacity-30 -mr-4 -mt-4"></div>
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-1" id="session-list">
+                        <div class="text-center mt-10 text-slate-600 text-xs">Memuat riwayat...</div>
                     </div>
-                </div>
-            </aside>
 
-            <main class="flex-1 bg-white rounded-3xl shadow-xl border border-slate-200 flex flex-col overflow-hidden relative">
-                <div class="bg-white px-8 py-5 border-b border-slate-100 flex justify-between items-center z-10">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" /></svg>
+                    <div class="p-4 bg-slate-950 border-t border-slate-800">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-xs" id="user-avatar">U</div>
+                            <div class="overflow-hidden">
+                                <p class="text-sm font-bold text-white truncate" id="user-name-display">User</p>
+                                <p class="text-[10px] text-slate-500">Pro Plan Active</p>
+                            </div>
                         </div>
+                    </div>
+                </aside>
+
+                <main class="flex-1 flex flex-col bg-slate-50/30 relative h-full">
+                    
+                    <div class="bg-white px-6 py-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center shadow-sm z-20 gap-4 flex-shrink-0">
                         <div>
-                            <h2 class="font-bold text-slate-800">Workspace</h2>
-                            <p class="text-xs text-slate-500">AI Active & Ready</p>
+                            <h2 class="font-bold text-slate-800 flex items-center gap-2 text-lg">
+                                <span class="text-2xl">💬</span> 
+                                <span id="current-chat-title">Percakapan Baru</span>
+                            </h2>
+                        </div>
+                        <div class="flex gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 no-scrollbar">
+                            <button onclick="fillInput('Buatkan poster promo Kopi Gula Aren yang estetik')" class="whitespace-nowrap px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-xs font-bold border border-blue-100 hover:bg-blue-100 transition flex items-center gap-1">🎨 Buat Poster</button>
+                            <button onclick="fillInput('Buatkan ide konten Instagram Story yang interaktif')" class="whitespace-nowrap px-3 py-1.5 bg-purple-50 text-purple-700 rounded-full text-xs font-bold border border-purple-100 hover:bg-purple-100 transition flex items-center gap-1">✨ Ide Konten</button>
+                            <button onclick="fillInput('Balas komplain customer: Makanannya asin banget!')" class="whitespace-nowrap px-3 py-1.5 bg-orange-50 text-orange-700 rounded-full text-xs font-bold border border-orange-100 hover:bg-orange-100 transition flex items-center gap-1">🛡️ Handle Komplain</button>
                         </div>
                     </div>
 
-                    <button onclick="resetChat()" class="group flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition text-xs font-bold border border-red-100">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 group-hover:scale-110 transition">
-                            <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clip-rule="evenodd" />
-                        </svg>
-                        Reset Chat
-                    </button>
-                </div>
-
-                <div id="chat-container" class="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar bg-slate-50/50">
-                    <div class="flex gap-4 animate-fade-in">
-                        <div class="w-10 h-10 rounded-xl bg-blue-600 flex flex-shrink-0 items-center justify-center text-white shadow-sm">
-                            <span class="text-xl">🤖</span>
-                        </div>
-                        <div class="bg-white p-5 rounded-2xl rounded-tl-none border border-slate-200 text-slate-700 shadow-sm max-w-[80%]">
-                            <p class="font-medium">Halo! Selamat datang di Workspace. 👋</p>
-                            <p class="mt-2 text-sm text-slate-500">Pilih menu di sebelah kiri untuk memulai, atau ketik perintah Anda di bawah. Saya bisa buat poster, caption, dan analisa bisnis.</p>
-                        </div>
+                    <div id="chat-container" class="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 chat-scrollbar scroll-smooth pb-[250px] overscroll-contain">
+                        <div id="scroll-anchor" class="h-4 w-full"></div> 
                     </div>
-                </div>
 
-                <div class="p-6 bg-white border-t border-slate-200">
-                    <form id="chat-form" class="relative max-w-4xl mx-auto">
-                        <div class="relative flex items-center shadow-lg rounded-2xl">
-                            <input type="text" id="user-input" 
-                                class="w-full bg-white text-slate-800 text-base pl-6 pr-16 py-5 rounded-2xl border border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition placeholder:text-slate-400 font-medium" 
-                                placeholder="Ketik ide atau perintah Anda disini..." required autocomplete="off">
-                            
-                            <button type="submit" 
-                                class="absolute right-3 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition duration-200">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-                                    <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
-                                </svg>
-                            </button>
-                        </div>
-                        <p class="text-center text-[11px] text-slate-400 mt-3 font-medium">
-                            Powered by Llama 3 & Flux Pro.
-                        </p>
-                    </form>
-                </div>
-            </main>
+                    <div class="absolute bottom-0 left-0 w-full bg-white/80 backdrop-blur-md border-t border-slate-200 p-4 sm:p-6 z-20">
+                        <form id="chat-form" class="relative max-w-4xl mx-auto group">
+                            <div class="relative flex items-center shadow-lg rounded-2xl bg-white transition-all duration-300 group-focus-within:ring-4 ring-blue-500/10 ring-offset-2 border border-slate-200">
+                                <input type="text" id="user-input" 
+                                    class="w-full bg-transparent text-slate-800 text-base pl-6 pr-16 py-4 rounded-2xl focus:outline-none placeholder:text-slate-400 font-medium" 
+                                    placeholder="Ketik perintah Anda disini... (Contoh: Buatkan logo warkop)" required autocomplete="off">
+                                
+                                <button type="submit" 
+                                    class="absolute right-2 p-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition duration-200 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+                                        <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <p class="text-center text-[11px] text-slate-400 mt-3 font-medium">Powered by Llama 3 & Flux Pro.</p>
+                        </form>
+                    </div>
+
+                </main>
+            </div>
         </div>
     </section>
 
@@ -244,27 +232,19 @@
                 </div>
             </div>
         </div>
-        <div class="absolute top-1/2 left-0 -translate-y-1/2 w-96 h-96 bg-blue-50 rounded-full blur-3xl opacity-50 -z-10"></div>
-        <div class="absolute bottom-0 right-0 w-96 h-96 bg-purple-50 rounded-full blur-3xl opacity-50 -z-10"></div>
     </section>
 
     <section id="contact" class="py-24 bg-slate-900 text-white relative overflow-hidden">
         <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600 rounded-full blur-[128px] opacity-20 transform translate-x-1/3 -translate-y-1/3"></div>
         <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-600 rounded-full blur-[128px] opacity-20 transform -translate-x-1/3 translate-y-1/3"></div>
-        
         <div class="max-w-4xl mx-auto px-6 text-center relative z-10">
             <h2 class="text-4xl md:text-5xl font-extrabold mb-6 tracking-tight">Siap Mengembangkan Bisnis?</h2>
             <p class="text-slate-300 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
                 Bergabunglah dengan ribuan UMKM modern yang telah menghemat waktu operasional dan biaya desain dengan Super Agent AI.
             </p>
-            
             <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <button class="px-8 py-4 bg-blue-600 hover:bg-blue-500 rounded-full font-bold transition shadow-lg shadow-blue-500/30 w-full sm:w-auto transform hover:-translate-y-1">
-                    Hubungi Sales
-                </button>
-                <button class="px-8 py-4 bg-transparent border border-slate-700 hover:bg-slate-800 rounded-full font-bold transition w-full sm:w-auto hover:border-slate-600">
-                    Pelajari Dokumentasi
-                </button>
+                <button class="px-8 py-4 bg-blue-600 hover:bg-blue-500 rounded-full font-bold transition shadow-lg shadow-blue-500/30 w-full sm:w-auto transform hover:-translate-y-1">Hubungi Sales</button>
+                <button class="px-8 py-4 bg-transparent border border-slate-700 hover:bg-slate-800 rounded-full font-bold transition w-full sm:w-auto hover:border-slate-600">Pelajari Dokumentasi</button>
             </div>
         </div>
     </section>
@@ -277,9 +257,7 @@
                 </div>
                 <span class="font-bold text-slate-900">Super Agent</span>
             </div>
-            
             <p class="text-slate-500 text-sm">© 2025 UMKM Super Agent. All rights reserved.</p>
-            
             <div class="flex gap-6 text-sm font-medium text-slate-500">
                 <a href="#" class="hover:text-blue-600 transition">Privacy Policy</a>
                 <a href="#" class="hover:text-blue-600 transition">Terms of Service</a>
@@ -289,55 +267,42 @@
 
     <script type="module" src="/src/app.js"></script>
     <script>
-        window.fillInput = (text) => {
-            const input = document.getElementById('user-input');
-            if(input) {
-                input.value = text;
-                input.focus();
-                document.getElementById('workspace').scrollIntoView({ behavior: 'smooth' });
-            }
-        }
-
+        // Fungsi untuk menampilkan nama user di Sidebar & Navbar
         document.addEventListener("DOMContentLoaded", () => {
-            const session = localStorage.getItem('user_session');
-            const authButton = document.getElementById('btn-auth');
-            const authContainer = authButton ? authButton.parentElement : null;
+            const sessionStr = localStorage.getItem('user_session');
+            const authContainer = document.getElementById('auth-container');
+            const userNameDisplay = document.getElementById('user-name-display');
+            const userAvatar = document.getElementById('user-avatar');
 
-            if (session) {
-                const user = JSON.parse(session);
+            if (sessionStr) {
+                const user = JSON.parse(sessionStr);
                 
-                // Sembunyikan tombol aslinya
-                if (authButton) authButton.style.display = 'none';
+                // Update Sidebar Name
+                if (userNameDisplay) userNameDisplay.textContent = user.name;
+                if (userAvatar) userAvatar.textContent = user.name.charAt(0).toUpperCase();
 
-                // Buat elemen User Profile
-                const userDiv = document.createElement('div');
-                userDiv.className = "flex items-center gap-4"; // Hapus ml-auto dari sini karena parentnya sudah ml-auto
-                userDiv.innerHTML = `
-                    <div class="text-right">
-                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Hello,</p>
-                        <p class="text-sm font-bold text-slate-800">${user.name}</p>
-                    </div>
-                    <button onclick="logout()" class="w-9 h-9 rounded-full bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center transition border border-red-100" title="Logout">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path fill-rule="evenodd" d="M7.5 3.75A1.5 1.5 0 006 5.25v13.5a1.5 1.5 0 001.5 1.5h6a1.5 1.5 0 001.5-1.5V15a.75.75 0 011.5 0v3.75a3 3 0 01-3 3h-6a3 3 0 01-3-3V5.25a3 3 0 013-3h6a3 3 0 013 3V9A.75.75 0 0115 9V5.25a1.5 1.5 0 00-1.5-1.5h-6zm10.72 4.72a.75.75 0 011.06 0l3 3a.75.75 0 010 1.06l-3 3a.75.75 0 11-1.06-1.06l1.72-1.72H9a.75.75 0 010-1.5h10.94l-1.72-1.72a.75.75 0 010-1.06z" clip-rule="evenodd" /></svg>
-                    </button>
-                `;
-                
-                // Masukkan ke dalam container yang sama dengan tombol
-                if(authContainer) {
-                    authContainer.appendChild(userDiv);
-                }
-
-            } else {
-                if (authButton) {
-                    authButton.innerText = "Login / Daftar";
-                    authButton.onclick = () => window.location.href = 'login.html';
+                // Update Navbar (Kanan Atas)
+                if (authContainer) {
+                    authContainer.innerHTML = `
+                        <div class="flex items-center gap-4">
+                            <div class="text-right">
+                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Hello,</p>
+                                <p class="text-sm font-bold text-slate-800">${user.name}</p>
+                            </div>
+                            <button onclick="logout()" class="w-10 h-10 rounded-full bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center transition border border-red-100" title="Keluar">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M7.5 3.75A1.5 1.5 0 006 5.25v13.5a1.5 1.5 0 001.5 1.5h6a1.5 1.5 0 001.5-1.5V15a.75.75 0 011.5 0v3.75a3 3 0 01-3 3h-6a3 3 0 01-3-3V5.25a3 3 0 013-3h6a3 3 0 013 3V9A.75.75 0 0115 9V5.25a1.5 1.5 0 00-1.5-1.5h-6zm10.72 4.72a.75.75 0 011.06 0l3 3a.75.75 0 010 1.06l-3 3a.75.75 0 11-1.06-1.06l1.72-1.72H9a.75.75 0 010-1.5h10.94l-1.72-1.72a.75.75 0 010-1.06z" clip-rule="evenodd" /></svg>
+                            </button>
+                        </div>
+                    `;
                 }
             }
         });
 
+        // Fungsi Logout
         window.logout = () => {
             if(confirm('Yakin ingin keluar?')) {
                 localStorage.removeItem('user_session');
+                localStorage.removeItem('access_token');
                 window.location.href = 'login.html';
             }
         }

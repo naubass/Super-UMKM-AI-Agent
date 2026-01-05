@@ -1,6 +1,6 @@
 const API_URL = "http://localhost:8000/api";
 
-export async function sendMessageToAI(message) {
+export async function sendMessageToAI(message, sessionId) {
     const token = localStorage.getItem('access_token');
 
     // Jika tidak ada token, paksa logout/login ulang
@@ -17,7 +17,11 @@ export async function sendMessageToAI(message) {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}` 
             },
-            body: JSON.stringify({ message: message })
+            // [UPDATE PENTING] Sertakan session_id di sini!
+            body: JSON.stringify({ 
+                message: message,
+                session_id: sessionId 
+            })
         });
 
         // Handle jika token kadaluarsa (401 Unauthorized)
@@ -29,7 +33,11 @@ export async function sendMessageToAI(message) {
             return;
         }
 
+        // Handle error lain (termasuk 422)
         if (!response.ok) {
+            // Kita coba baca pesan error dari server jika ada
+            const errorData = await response.json().catch(() => ({}));
+            console.error("Server Error Detail:", errorData);
             throw new Error(`HTTP error! Status: ${response.status}`);
         }
 

@@ -1,13 +1,15 @@
 import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 
-// Konfigurasi Marked
-marked.setOptions({ breaks: true, gfm: true });
+marked.setOptions({
+    breaks: true,  
+    gfm: true      
+});
 
 export function createChatBubble(role, message, taskType = "UMUM") {
     const isUser = role === 'user';
     const bubble = document.createElement('div');
     
-    // Layout
+    // Layout Bubble
     bubble.className = `flex gap-3 animate-fade-in mb-6 ${isUser ? 'flex-row-reverse' : ''}`;
 
     // Avatar
@@ -21,24 +23,23 @@ export function createChatBubble(role, message, taskType = "UMUM") {
     const content = document.createElement('div');
     
     if (isUser) {
-        // User: Bubble dikecilkan sedikit (max-w-[70%] -> max-w-[65%])
-        content.className = "bg-slate-800 text-white px-4 py-3 rounded-2xl rounded-tr-none shadow-sm max-w-[65%] whitespace-pre-wrap leading-relaxed";
+        content.className = "bg-slate-800 text-white px-4 py-3 rounded-2xl rounded-tr-none shadow-sm max-w-[70%] whitespace-pre-wrap leading-relaxed text-sm";
         content.textContent = message;
     } else {
-        // Bot: Bubble dikecilkan (max-w-[85%] -> max-w-[80%])
-        content.className = "bg-white px-5 py-4 rounded-2xl rounded-tl-none border border-slate-200 shadow-sm max-w-[80%] text-slate-700";
+        content.className = "bot-content bg-white px-5 py-4 rounded-2xl rounded-tl-none border border-slate-200 shadow-sm max-w-[85%] text-slate-700 text-sm";
         
-        // Parse Markdown & Fix Spasi (Magic Replace)
         let formattedHtml = marked.parse(message);
         formattedHtml = formattedHtml.replace(/<p>/g, '<p class="mb-4 leading-relaxed">'); 
+        formattedHtml = formattedHtml.replace(/<br\s*\/?>/gi, '<br class="block my-3 content-[\'\']">');
         formattedHtml = formattedHtml.replace(/<ul>/g, '<ul class="list-disc ml-5 mb-4 space-y-2">');
         formattedHtml = formattedHtml.replace(/<ol>/g, '<ol class="list-decimal ml-5 mb-4 space-y-2">');
         formattedHtml = formattedHtml.replace(/<li>/g, '<li class="pl-1">');
         formattedHtml = formattedHtml.replace(/<strong>/g, '<strong class="font-bold text-slate-900">');
-        
+
+        // Render HTML
         content.innerHTML = formattedHtml;
 
-        // Cek Gambar & Setup Download
+        // Logic Gambar & Download
         const img = content.querySelector('img');
         if (img) {
             setupImageWithDownload(img);
@@ -65,36 +66,88 @@ export function createLoadingIndicator() {
 }
 
 function setupImageWithDownload(imgElement) {
-    imgElement.className = "rounded-lg shadow-md max-w-[320px] w-full h-auto border border-slate-100 mt-3 mb-3";
+    // Styling Gambar
+    imgElement.className = "rounded-lg shadow-md max-w-[350px] w-full h-auto border border-slate-100 mt-3 mb-3 block cursor-pointer hover:opacity-95 transition";
     
+    // Container Tombol
     const btnContainer = document.createElement('div');
-    btnContainer.className = "flex justify-start mt-1"; 
+    btnContainer.className = "flex justify-start mt-1";
     
+    // Tombol Download
     const dlBtn = document.createElement('button');
     dlBtn.className = "flex items-center gap-2 bg-slate-900 hover:bg-slate-700 text-white px-3 py-1.5 rounded-full text-[10px] font-bold transition shadow hover:shadow-md";
     dlBtn.innerHTML = `Simpan Gambar`;
 
     dlBtn.onclick = async (e) => {
         e.preventDefault();
+        
         try {
-            dlBtn.innerHTML = "⏳...";
+            dlBtn.innerHTML = "⏳ Memproses...";
             dlBtn.disabled = true;
-            const res = await fetch(imgElement.src);
-            const blob = await res.blob();
+
+            let blob;
+            const imageSrc = imgElement.src;
+
+            // 1. CEK: Apakah ini Base64 (Data URL)?
+            if (imageSrc.startsWith('data:')) {
+                // JURUS ANTI GAGAL: Konversi Manual (Tanpa Fetch)
+                blob = dataURItoBlob(imageSrc);
+            } else {
+                // 2. Jika URL biasa (http...), baru pakai Fetch
+                const response = await fetch(imageSrc);
+                blob = await response.blob();
+            }
+
+            // 3. Proses Download Blob
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
+            a.style.display = 'none';
             a.href = url;
-            a.download = `SuperAgent_${Date.now()}.png`;
+            // Gunakan .jpg karena Flux menghasilkan JPEG
+            a.download = `SuperAgent_Design_${Date.now()}.jpg`; 
+            
             document.body.appendChild(a);
             a.click();
+            
+            // Bersihkan memori
             window.URL.revokeObjectURL(url);
-            dlBtn.innerHTML = "Tersimpan";
-            setTimeout(() => { dlBtn.innerHTML = "Simpan Gambar"; dlBtn.disabled = false; }, 2000);
+            document.body.removeChild(a);
+
+            // Feedback Sukses
+            dlBtn.innerHTML = "✅ Tersimpan di Galeri";
+            dlBtn.className = "flex items-center gap-2 bg-green-600 text-white px-3 py-1.5 rounded-full text-[10px] font-bold transition";
+            
+            // Reset tombol setelah 3 detik
+            setTimeout(() => { 
+                dlBtn.innerHTML = "Simpan Gambar"; 
+                dlBtn.disabled = false; 
+                dlBtn.className = "flex items-center gap-2 bg-slate-900 hover:bg-slate-700 text-white px-3 py-1.5 rounded-full text-[10px] font-bold transition shadow hover:shadow-md";
+            }, 3000);
+
         } catch (err) {
-            alert("Gagal download otomatis.");
-            dlBtn.innerHTML = "Gagal";
+            console.error("Download Error:", err);
+            alert("Gagal menyimpan. Coba klik kanan pada gambar lalu pilih 'Save Image As'.");
+            dlBtn.innerHTML = "❌ Gagal";
+            setTimeout(() => { dlBtn.disabled = false; dlBtn.innerHTML = "⬇️ Coba Lagi"; }, 2000);
         }
     };
+
     btnContainer.appendChild(dlBtn);
     imgElement.insertAdjacentElement('afterend', btnContainer);
+}
+
+function dataURItoBlob(dataURI) {
+    // Pisahkan metadata dan data
+    const splitData = dataURI.split(',');
+    const byteString = atob(splitData[1]); 
+    const mimeString = splitData[0].split(':')[1].split(';')[0]; 
+
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    
+    for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+
+    return new Blob([ab], {type: mimeString});
 }
