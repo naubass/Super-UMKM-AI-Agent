@@ -59,48 +59,57 @@ Jadilah KREATIF, ASIK, dan MENJUAL!
 """
 
 def router_node(state: AgentState):
-    """Supervisor: Menentukan jenis tugas (Updated Logic)."""
+    """Supervisor: Menentukan jenis tugas (Updated Logic v3)."""
     messages = state["messages"]
     last_msg = messages[-1].content 
 
     prompt = """
-    Kamu adalah AI Router. Tugasmu mengkategorikan niat (intent) user.
+    Kamu adalah AI Router. Tugasmu adalah mengkategorikan niat (intent) user dengan sangat presisi.
     
-    ANALISA NIAT USER DENGAN TELITI:
+    ANALISA INPUT USER DAN PILIH SALAH SATU KATEGORI BERIKUT:
 
     1. 'GAMBAR' 
-       - Pilih ini JIKA user minta visual: "buatkan poster", "logo", "gambar", "desain banner".
+       - Keyword: "poster", "logo", "gambar", "desain", "foto".
 
-    2. 'KONTEN' 
-       - Pilih ini JIKA user minta DIBUATKAN TEKS JADI/NASKAH.
-       - Contoh: "buatkan caption IG", "tuliskan script tiktok", "ide status WA".
-       - Ciri: User ingin hasil berupa teks kreatif siap posting.
+    2. 'SEO' (Marketplace)
+       - Keyword: "shopee", "tokopedia", "judul produk", "deskripsi produk", "seo".
 
-    3. 'REVIEW' 
-       - Pilih ini JIKA user minta membalas ulasan/komplain: "balas review bintang 1", "jawab komplain customer".
+    3. 'JADWAL' (Content Calendar / Planning)
+       - Ciri UTAMA: Minta rencana/jadwal untuk BEBERAPA HARI/WAKTU.
+       - Keyword: "jadwal", "kalender", "schedule", "rencana konten", "seminggu", "sebulan", "ide konten seminggu".
+       - PENTING: Jika ada kata "jadwal" atau "kalender", PASTI masuk sini, meskipun ada kata "konten".
 
-    4. 'UMUM' 
-       - Pilih ini untuk KONSULTASI, TIPS, STRATEGI, atau OBROLAN BIASA.
-       - Contoh: "Tips agar warung ramai", "Cara marketing efektif", "Apa itu HPP", "Halo", "Siapa kamu".
-       - PENTING: Jika user minta ILMU/SARAN, itu masuk UMUM, bukan KONTEN.
+    4. 'KONTEN' (Social Media Caption / Script)
+       - Ciri: Minta dibuatkan teks/naskah untuk SATU postingan.
+       - Keyword: "caption", "script", "status wa", "buatkan konten", "ide konten" (jika tunggal).
+       - PENTING: Jangan pilih ini jika user minta "Jadwal" atau "Rencana".
 
-    Output HANYA satu kata: GAMBAR, KONTEN, REVIEW, atau UMUM.
+    5. 'REVIEW' 
+       - Keyword: "balas review", "komplain", "ulasan".
+
+    6. 'UMUM' 
+       - Keyword: "halo", "tips", "cara", "strategi", "siapa kamu".
+
+    Output HANYA satu kata: GAMBAR, SEO, JADWAL, KONTEN, REVIEW, atau UMUM.
     """
     
     response = llm.invoke([SystemMessage(content=prompt), HumanMessage(content=last_msg)])
     raw_kategori = response.content.strip().upper()
 
-    # Cleaning output (jaga-jaga kalau LLM jawab panjang)
     if "GAMBAR" in raw_kategori:
         kategori = "GAMBAR"
-    elif "KONTEN" in raw_kategori:
+    elif "SEO" in raw_kategori:
+        kategori = "SEO"
+    elif "JADWAL" in raw_kategori:  
+        kategori = "JADWAL"
+    elif "KONTEN" in raw_kategori: 
         kategori = "KONTEN"
     elif "REVIEW" in raw_kategori:
         kategori = "REVIEW"
     else:
         kategori = "UMUM"
     
-    print(f"🔀 Router Decision: {kategori} (Input: {last_msg})") # Print untuk debug di terminal
+    print(f"🔀 Router Decision: {kategori} (Input: {last_msg})") 
     return {"tugas_saat_ini": kategori}
 
 def artist_node(state: AgentState):
@@ -216,6 +225,57 @@ def review_responder_node(state: AgentState):
     response = llm.invoke([SystemMessage(content=prompt)] + state["messages"])
     return {"messages": [response]}
 
+def seo_specialist_node(state: AgentState):
+    """Ahli SEO Marketplace (Updated Creative Mode)"""
+    last_msg = state["messages"][-1].content
+
+    prompt = """
+    Kamu adalah E-commerce SEO Specialist. Tugasmu mengoptimalkan produk UMKM agar muncul di pencarian Shopee/Tokopedia.
+    
+    TUGAS:
+    Buatkan optimasi produk berdasarkan input user.
+    
+    FORMAT OUTPUT WAJIB:
+    1. 🏷️ JUDUL PRODUK (2 Opsi):
+       - Buat judul mengandung kata kunci viral/pencarian tinggi.
+       - Formula: [Nama Produk] + [Kata Kunci 1] + [Kata Kunci 2] + [Benefit/Fitur].
+       - Hindari spam, tetap enak dibaca.
+       
+    2. 📝 DESKRIPSI PRODUK (Copywriting + SEO):
+       - Paragraf 1: Hook emosional (Masalah & Solusi).
+       - ✨ Keunggulan Produk (Bullet points).
+       - 📦 Spesifikasi Lengkap (Bahan, Ukuran, Berat, Expired).
+       - 🛡️ Garansi/Cara Klaim (Penting untuk trust).
+       - Hashtag relevan.
+       
+    Gaya bahasa: Terpercaya, detail, tapi tetap ramah.
+    """
+
+    response = llm.invoke([SystemMessage(content=prompt), HumanMessage(content=last_msg)])
+    return {"messages": [response]}
+
+def calendar_planner_node(state: AgentState):
+    """Pembuat Jadwal Content"""
+    last_msg = state["messages"][-1].content
+
+    prompt = """
+    Kamu adalah Social Media Strategist. Tugasmu membuat Content Calendar (Jadwal Posting).
+    
+    TUGAS:
+    Buatkan rencana konten terjadwal dalam format TABEL MARKDOWN.
+    
+    KOLOM TABEL HARUS ADA:
+    | Hari | Ide Konten | Hook/Headline | Caption Singkat | CTAs |
+    
+    ATURAN:
+    1. Variasikan jenis konten (Edukasi, Hiburan, Promosi, Testimoni).
+    2. Jangan jualan terus (Gunakan aturan 80% edukasi/hiburan, 20% jualan).
+    3. Sesuaikan dengan topik yang diminta user.
+    """
+
+    response = llm.invoke([SystemMessage(content=prompt), HumanMessage(content=last_msg)])
+    return {"messages": [response]}
+
 def general_node(state: AgentState):
     """Chatbot Umum (Updated Creative Mode)"""
     messages = [SystemMessage(content=SYSTEM_PROMPT)] + state["messages"]
@@ -231,6 +291,8 @@ workflow.add_node("artist", artist_node)
 workflow.add_node("researcher", researcher_node)
 workflow.add_node("writer", content_writer_node)
 workflow.add_node("responder", review_responder_node)
+workflow.add_node("seo", seo_specialist_node)
+workflow.add_node("calendar", calendar_planner_node)
 workflow.add_node("general", general_node)
 
 # Edges
@@ -244,6 +306,10 @@ def route_decision(state: AgentState):
         return "researcher"
     elif "REVIEW" in task:
         return "responder"
+    elif "SEO" in task:
+        return "seo"
+    elif "JADWAL" in task:
+        return "calendar"
     else:
         return "general"
     
@@ -253,6 +319,8 @@ workflow.add_conditional_edges(
     {
         "artist": "artist",
         "researcher": "researcher",
+        "seo": "seo",
+        "calendar": "calendar",
         "responder": "responder",
         "general": "general",
     }
@@ -262,6 +330,8 @@ workflow.add_edge("artist", END)
 workflow.add_edge("researcher", "writer")
 workflow.add_edge("writer", END)
 workflow.add_edge("responder", END)
+workflow.add_edge("seo", END)
+workflow.add_edge("calendar", END)
 workflow.add_edge("general", END)
 
 # Compile

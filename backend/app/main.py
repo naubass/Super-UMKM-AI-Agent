@@ -123,6 +123,18 @@ def create_session(db: Session = Depends(get_db), current_user: User = Depends(g
 def get_session(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return db.query(ChatSession).filter(ChatSession.user_id == current_user.id).order_by(ChatSession.created_at.desc()).all()
 
+@app.delete("/api/sessions/{session_id}")
+def delete_session(session_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    session = db.query(ChatSession).filter(ChatSession.id == session_id, ChatSession.user_id == current_user.id).first()
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    db.query(ChatHistory).filter(ChatHistory.session_id == session_id).delete()
+    db.delete(session)
+    db.commit()
+    return {"message": "Session deleted successfully"}
+
 @app.get("/api/history/{session_id}")
 def get_history_by_session(session_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     session = db.query(ChatSession).filter(ChatSession.id == session_id, ChatSession.user_id == current_user.id).first()
