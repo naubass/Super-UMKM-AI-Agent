@@ -68,26 +68,30 @@ def router_node(state: AgentState):
     
     ANALISA INPUT USER DAN PILIH SALAH SATU KATEGORI BERIKUT:
 
-    1. 'GAMBAR' 
+    1. 'SPY' (Riset Kompetitor)
+       - Ciri: User mengirim LINK (Instagram/Shopee/Tokopedia) atau nama toko lain untuk dianalisa.
+       - Keyword: "analisa kompetitor", "cek toko sebelah", "riset link ini", "spy", "mata-matai", "apa kelebihan toko ini".
+
+    2. 'GAMBAR' 
        - Keyword: "poster", "logo", "gambar", "desain", "foto".
 
-    2. 'SEO' (Marketplace)
+    3. 'SEO' (Marketplace)
        - Keyword: "shopee", "tokopedia", "judul produk", "deskripsi produk", "seo".
 
-    3. 'JADWAL' (Content Calendar / Planning)
+    4. 'JADWAL' (Content Calendar / Planning)
        - Ciri UTAMA: Minta rencana/jadwal untuk BEBERAPA HARI/WAKTU.
        - Keyword: "jadwal", "kalender", "schedule", "rencana konten", "seminggu", "sebulan", "ide konten seminggu".
        - PENTING: Jika ada kata "jadwal" atau "kalender", PASTI masuk sini, meskipun ada kata "konten".
 
-    4. 'KONTEN' (Social Media Caption / Script)
+    5. 'KONTEN' (Social Media Caption / Script)
        - Ciri: Minta dibuatkan teks/naskah untuk SATU postingan.
        - Keyword: "caption", "script", "status wa", "buatkan konten", "ide konten" (jika tunggal).
        - PENTING: Jangan pilih ini jika user minta "Jadwal" atau "Rencana".
 
-    5. 'REVIEW' 
+    6. 'REVIEW' 
        - Keyword: "balas review", "komplain", "ulasan".
 
-    6. 'UMUM' 
+    7. 'UMUM' 
        - Keyword: "halo", "tips", "cara", "strategi", "siapa kamu".
 
     Output HANYA satu kata: GAMBAR, SEO, JADWAL, KONTEN, REVIEW, atau UMUM.
@@ -96,13 +100,15 @@ def router_node(state: AgentState):
     response = llm.invoke([SystemMessage(content=prompt), HumanMessage(content=last_msg)])
     raw_kategori = response.content.strip().upper()
 
-    if "GAMBAR" in raw_kategori:
+    if "SPY" in raw_kategori:       
+        kategori = "SPY"
+    elif "GAMBAR" in raw_kategori:
         kategori = "GAMBAR"
     elif "SEO" in raw_kategori:
         kategori = "SEO"
-    elif "JADWAL" in raw_kategori:  
+    elif "JADWAL" in raw_kategori:
         kategori = "JADWAL"
-    elif "KONTEN" in raw_kategori: 
+    elif "KONTEN" in raw_kategori:
         kategori = "KONTEN"
     elif "REVIEW" in raw_kategori:
         kategori = "REVIEW"
@@ -276,6 +282,82 @@ def calendar_planner_node(state: AgentState):
     response = llm.invoke([SystemMessage(content=prompt), HumanMessage(content=last_msg)])
     return {"messages": [response]}
 
+def competitor_spy_node(state: AgentState):
+    """Mata-mata Kompetitor (Updated: Aggressive Search)"""
+    last_msg = state["messages"][-1].content
+    print(f"🕵️ SPY AGENT AKTIF: {last_msg}")
+
+    # Ekstrak Target (Nama Brand)
+    extractor_prompt = "Ambil hanya NAMA BRAND/TOKO dari teks ini. Hapus kata 'https', 'www', 'shopee', 'instagram'. Output HANYA nama bersih."
+    target_name = llm.invoke([SystemMessage(content=extractor_prompt), HumanMessage(content=last_msg)]).content.strip()
+    print(f"🎯 Target Terdeteksi: {target_name}")
+
+    # Setup Pencarian (Mencoba beberapa variasi query)
+    search_results = ""
+    queries = [
+        f"{target_name} review pelanggan indonesia",
+        f"kelebihan kekurangan produk {target_name}",
+        f"{target_name} penipuan atau asli", # Pancingan biar keluar review jujur
+        f"harga produk {target_name} termurah mahal"
+    ]
+    
+    found_data = False
+
+    try:
+        for q in queries:
+            print(f"   🔍 Googling: '{q}'...")
+            res = search_engine.invoke(q)
+            
+            # Cek apakah hasil valid
+            if "No results" not in res and len(res) > 50:
+                search_results += f"\n--- SUMBER: {q} ---\n{res}\n"
+                found_data = True
+            else:
+                print("   ❌ Tidak ada hasil relevan.")
+
+    except Exception as e:
+        print(f"⚠️ Error Koneksi Internet: {e}")
+        search_results = "GAGAL KONEKSI INTERNET."
+
+    # Analisa Data
+    if not found_data:
+        final_msg = f"Maaf, saya sudah mencoba mencari data tentang **{target_name}** di internet tapi tidak menemukan hasil yang spesifik. \n\nPastikan nama toko/brand benar atau cukup terkenal di Google."
+        return {"messages": [AIMessage(content=final_msg)]}
+
+    # Jika ada data, lakukan analisa
+    analysis_prompt = f"""
+    Kamu adalah Business Intelligence Analyst.
+    Tugasmu adalah menyusun laporan strategi berdasarkan DATA MENTAH hasil pencarian internet di bawah ini.
+
+    DATA PENCARIAN REAL-TIME:
+    {search_results}
+
+    INSTRUKSI:
+    1. Buat laporan berdasarkan FAKTA di atas.
+    2. Kutip review pelanggan jika ada.
+    3. Analisa SWOT singkat (Strength, Weakness, Opportunity, Threat).
+
+    FORMAT LAPORAN:
+    🕵️ **Target**: {target_name}
+    
+    ⭐ **Reputasi Online**:
+    [Rangkuman sentimen publik berdasarkan data]
+
+    ✅ **Kelebihan (Apa yang disuka?)**:
+    - [Poin 1]
+    - [Poin 2]
+
+    ❌ **Kelemahan (Apa yang dikeluhkan?)**:
+    - [Poin 1]
+    
+    🚀 **Strategi Mengalahkan Mereka**:
+    "Berdasarkan data di atas, kita bisa..."
+    """
+
+    final_response = llm.invoke([SystemMessage(content=analysis_prompt), HumanMessage(content="Buat laporan.")])
+    
+    return {"messages": [final_response]}
+
 def general_node(state: AgentState):
     """Chatbot Umum (Updated Creative Mode)"""
     messages = [SystemMessage(content=SYSTEM_PROMPT)] + state["messages"]
@@ -292,6 +374,7 @@ workflow.add_node("researcher", researcher_node)
 workflow.add_node("writer", content_writer_node)
 workflow.add_node("responder", review_responder_node)
 workflow.add_node("seo", seo_specialist_node)
+workflow.add_node("spy", competitor_spy_node)
 workflow.add_node("calendar", calendar_planner_node)
 workflow.add_node("general", general_node)
 
@@ -310,6 +393,8 @@ def route_decision(state: AgentState):
         return "seo"
     elif "JADWAL" in task:
         return "calendar"
+    elif "SPY" in task:
+        return "spy"
     else:
         return "general"
     
@@ -321,6 +406,7 @@ workflow.add_conditional_edges(
         "researcher": "researcher",
         "seo": "seo",
         "calendar": "calendar",
+        "spy": "spy",
         "responder": "responder",
         "general": "general",
     }
@@ -332,6 +418,7 @@ workflow.add_edge("writer", END)
 workflow.add_edge("responder", END)
 workflow.add_edge("seo", END)
 workflow.add_edge("calendar", END)
+workflow.add_edge("spy", END)
 workflow.add_edge("general", END)
 
 # Compile
