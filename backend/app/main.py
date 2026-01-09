@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, File, UploadFile
 from sqlalchemy.orm import Session
 from app.core.database import engine, get_db, Base
 from app.models.user import User
@@ -17,6 +17,8 @@ from pydantic import BaseModel
 from sqlalchemy import desc
 from datetime import timedelta
 from fastapi.staticfiles import StaticFiles
+from app.utils.rag_manager import process_document
+import shutil
 import os
 
 Base.metadata.create_all(bind=engine)
@@ -183,3 +185,20 @@ def reset_chat_history(
     db.query(ChatHistory).filter(ChatHistory.user_id == current_user.id).delete()
     db.commit()
     return {"message": "Riwayat chat berhasil dihapus"}
+
+@app.post("/api/upload")
+async def upload_file(file: UploadFile = File(...), db: Session = Depends(get_db)):
+    try:
+        file_path = f"temp_{file.filename}"
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        file_ext = file.filename.split(".")[-1]
+
+        result_msg = process_document(file_path, file_ext)
+        os.remove(file_path)
+
+        return {"status": "success", "message": f"file: {file.filename} berhasil dipelajari {result_msg}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+

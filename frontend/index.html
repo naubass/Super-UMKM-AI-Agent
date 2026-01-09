@@ -196,19 +196,30 @@
 
                     <div class="absolute bottom-0 left-0 w-full bg-white/80 backdrop-blur-md border-t border-slate-200 p-4 sm:p-6 z-20">
                         <form id="chat-form" class="relative max-w-4xl mx-auto group">
-                            <div class="relative flex items-center shadow-lg rounded-2xl bg-white transition-all duration-300 group-focus-within:ring-4 ring-blue-500/10 ring-offset-2 border border-slate-200">
+                            <div class="relative flex items-center shadow-lg rounded-2xl bg-white transition-all duration-300 group-focus-within:ring-4 ring-blue-500/10 ring-offset-2 border border-slate-200 p-1.5">
+                                
+                                <label for="file-upload" class="p-3 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-blue-600 transition cursor-pointer flex-shrink-0" title="Upload PDF/Excel">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                                    </svg>
+                                    <input id="file-upload" type="file" class="hidden" accept=".pdf,.xlsx,.xls,.csv">
+                                </label>
+
                                 <input type="text" id="user-input" 
-                                    class="w-full bg-transparent text-slate-800 text-base pl-6 pr-16 py-4 rounded-2xl focus:outline-none placeholder:text-slate-400 font-medium" 
-                                    placeholder="Ketik perintah Anda disini... (Contoh: Buatkan logo warkop)" required autocomplete="off">
+                                    class="w-full bg-transparent text-slate-800 text-base px-3 py-3 focus:outline-none placeholder:text-slate-400 font-medium" 
+                                    placeholder="Ketik perintah atau upload file bisnis Anda..." required autocomplete="off">
                                 
                                 <button type="submit" 
-                                    class="absolute right-2 p-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition duration-200 flex items-center justify-center">
+                                    class="p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition duration-200 flex items-center justify-center flex-shrink-0">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
                                         <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
                                     </svg>
                                 </button>
                             </div>
-                            <p class="text-center text-[11px] text-slate-400 mt-3 font-medium">Powered by Llama 3 & Flux Pro.</p>
+                            
+                            <p class="text-center text-[11px] text-slate-400 mt-3 font-medium">
+                                Powered by Llama 3, Flux Pro & RAG Engine.
+                            </p>
                         </form>
                     </div>
 

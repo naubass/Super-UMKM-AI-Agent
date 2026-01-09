@@ -3,6 +3,7 @@ from langgraph.prebuilt import ToolNode
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langchain_groq import ChatGroq
 from app.core.config import settings
+from app.utils.rag_manager import get_answer_from_doc
 from .state import AgentState
 from .tools import search_engine
 from .image_tool import generate_image_url
@@ -91,10 +92,15 @@ def router_node(state: AgentState):
     6. 'REVIEW' 
        - Keyword: "balas review", "komplain", "ulasan".
 
-    7. 'UMUM' 
+    7. 'DATA' (Analisa Dokumen/File)
+       - Ciri UTAMA: User bertanya tentang file yang diupload atau meminta angka/data spesifik.
+       - Keyword: "dari file tadi", "analisa laporan", "rangkum pdf", "berapa total", "berapa jumlah", "cari data", "total retur", "omset".
+       - PENTING: Jika user tanya angka (uang/jumlah) dan ada konteks bisnis, masukkan ke DATA.
+
+    8. 'UMUM' 
        - Keyword: "halo", "tips", "cara", "strategi", "siapa kamu".
 
-    Output HANYA satu kata: GAMBAR, SEO, JADWAL, KONTEN, REVIEW, atau UMUM.
+    Output HANYA satu kata: SPY, GAMBAR, SEO, JADWAL, KONTEN, REVIEW, DATA atau UMUM.
     """
     
     response = llm.invoke([SystemMessage(content=prompt), HumanMessage(content=last_msg)])
@@ -112,6 +118,8 @@ def router_node(state: AgentState):
         kategori = "KONTEN"
     elif "REVIEW" in raw_kategori:
         kategori = "REVIEW"
+    elif "DATA" in raw_kategori:
+        kategori = "DATA"
     else:
         kategori = "UMUM"
     
@@ -358,6 +366,33 @@ def competitor_spy_node(state: AgentState):
     
     return {"messages": [final_response]}
 
+def rag_advisor_node(state: AgentState):
+    """Node Konsultan Data (RAG)"""
+    last_msg = state["messages"][-1].content
+    print(f"📂 RAG NODE: Menganalisa dokumen untuk '{last_msg}'")
+
+    context = get_answer_from_doc(last_msg)
+    if not context:
+        return {"messages": [AIMessage(content="⚠️ Maaf, saya belum menemukan dokumen yang diupload. Silakan upload file PDF/Excel terlebih dahulu ya!")]}
+    
+    rag_prompt = f"""
+    Kamu adalah Data Analyst Profesional untuk UMKM.
+    Jawab pertanyaan user HANYA berdasarkan CONTEXT DATA di bawah ini.
+
+    CONTEXT DATA DARI FILE USER:
+    {context}
+
+    PERTANYAAN USER: {last_msg}
+
+    ATURAN:
+    1. Jika jawaban ada di data, jelaskan dengan detail dan angka.
+    2. Jika jawaban TIDAK ADA di data, katakan "Maaf, informasi tersebut tidak ada di dalam dokumen." jangan mengarang.
+    3. Gunakan gaya bahasa profesional tapi mudah dimengerti.
+    """
+
+    response = llm.invoke([SystemMessage(content=rag_prompt), HumanMessage(content=last_msg)])
+    return {"messages": [response]}
+
 def general_node(state: AgentState):
     """Chatbot Umum (Updated Creative Mode)"""
     messages = [SystemMessage(content=SYSTEM_PROMPT)] + state["messages"]
@@ -376,6 +411,7 @@ workflow.add_node("responder", review_responder_node)
 workflow.add_node("seo", seo_specialist_node)
 workflow.add_node("spy", competitor_spy_node)
 workflow.add_node("calendar", calendar_planner_node)
+workflow.add_node("rag", rag_advisor_node)
 workflow.add_node("general", general_node)
 
 # Edges
@@ -395,6 +431,8 @@ def route_decision(state: AgentState):
         return "calendar"
     elif "SPY" in task:
         return "spy"
+    elif "DATA" in task:
+        return "rag"
     else:
         return "general"
     
@@ -408,6 +446,7 @@ workflow.add_conditional_edges(
         "calendar": "calendar",
         "spy": "spy",
         "responder": "responder",
+        "rag": "rag",
         "general": "general",
     }
 )
@@ -419,6 +458,7 @@ workflow.add_edge("responder", END)
 workflow.add_edge("seo", END)
 workflow.add_edge("calendar", END)
 workflow.add_edge("spy", END)
+workflow.add_edge("rag", END)
 workflow.add_edge("general", END)
 
 # Compile

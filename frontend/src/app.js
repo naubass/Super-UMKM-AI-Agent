@@ -11,6 +11,46 @@ const input = document.getElementById('user-input');
 const chatContainer = document.getElementById('chat-container');
 const sessionListEl = document.getElementById('session-list');
 const chatTitleEl = document.getElementById('current-chat-title');
+const fileInput = document.getElementById('file-upload');
+
+fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    chatContainer.appendChild(createChatBubble('user', `📂 Mengupload dokumen: ${file.name}...`));
+    const loader = createLoadingIndicator();
+    chatContainer.appendChild(loader);
+    scrollToBottom();
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const token = localStorage.getItem('access_token');
+
+    try {
+        const res = await fetch('http://localhost:8000/api/upload', {
+            method: 'POST',
+            headers: { "Authorization": `Bearer ${token}` },
+            body: formData
+        });
+
+        const data = await res.json();
+        loader.remove();
+
+        if (res.ok) {
+            chatContainer.appendChild(createChatBubble('ai', `✅ **Dokumen Berhasil Dipelajari!**\n\nSaya sudah membaca isi file *${file.name}*. \nSilakan tanyakan apa saja terkait data di dalamnya.`));
+        } else {
+            chatContainer.appendChild(createChatBubble('ai', `❌ Gagal memproses dokumen.`));
+        }
+    } catch (err) {
+        loader.remove();
+        console.error(err);
+        chatContainer.appendChild(createChatBubble('ai', `⚠️ Maaf, terjadi kesalahan koneksi.`));
+    }
+
+    scrollToBottom();
+    fileInput.value = '';
+})
  
 // --- HELPER: SPACER MANAGER ---
 function ensureSpacer() {
