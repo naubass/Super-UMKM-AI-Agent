@@ -3,7 +3,7 @@ from langgraph.prebuilt import ToolNode
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langchain_groq import ChatGroq
 from app.core.config import settings
-from app.utils.rag_manager import get_answer_from_doc
+from app.utils.rag_manager import analyze_data_query
 from .state import AgentState
 from .tools import search_engine
 from .image_tool import generate_image_url
@@ -371,27 +371,31 @@ def rag_advisor_node(state: AgentState):
     last_msg = state["messages"][-1].content
     print(f"📂 RAG NODE: Menganalisa dokumen untuk '{last_msg}'")
 
-    context = get_answer_from_doc(last_msg)
-    if not context:
-        return {"messages": [AIMessage(content="⚠️ Maaf, saya belum menemukan dokumen yang diupload. Silakan upload file PDF/Excel terlebih dahulu ya!")]}
-    
-    rag_prompt = f"""
-    Kamu adalah Data Analyst Profesional untuk UMKM.
-    Jawab pertanyaan user HANYA berdasarkan CONTEXT DATA di bawah ini.
+    result, type_res = analyze_data_query(last_msg)
 
-    CONTEXT DATA DARI FILE USER:
-    {context}
+    if type_res == "NO_FILE":
+        error_msg = "⚠️ Maaf, belum ada file yang diupload atau file tidak ditemukan. Silakan upload file PDF atau Excel terlebih dahulu."
+        return {"messages": [AIMessage(content=error_msg)]}
+    elif type_res == "DIRECT_ANSWER":
+        return {"messages": [AIMessage(content=result)]}
+    else:
+        rag_prompt = f"""
+        Kamu adalah Data Analyst Profesional untuk UMKM.
+        Jawab pertanyaan user HANYA berdasarkan CONTEXT DATA dokumen di bawah ini.
 
-    PERTANYAAN USER: {last_msg}
+        CONTEXT DATA DARI FILE USER:
+        {result}
 
-    ATURAN:
-    1. Jika jawaban ada di data, jelaskan dengan detail dan angka.
-    2. Jika jawaban TIDAK ADA di data, katakan "Maaf, informasi tersebut tidak ada di dalam dokumen." jangan mengarang.
-    3. Gunakan gaya bahasa profesional tapi mudah dimengerti.
-    """
+        PERTANYAAN USER: {last_msg}
 
-    response = llm.invoke([SystemMessage(content=rag_prompt), HumanMessage(content=last_msg)])
-    return {"messages": [response]}
+        ATURAN:
+        1. Jawab sesuai data yang ada di Context.
+        2. Jika jawaban TIDAK ADA di context, katakan "Maaf, informasi tersebut tidak ditemukan di dalam dokumen."
+        3. Gunakan gaya bahasa profesional, ramah, dan mudah dimengerti.
+        """
+
+        response = llm.invoke([SystemMessage(content=rag_prompt), HumanMessage(content=last_msg)])
+        return {"messages": [response]}
 
 def general_node(state: AgentState):
     """Chatbot Umum (Updated Creative Mode)"""

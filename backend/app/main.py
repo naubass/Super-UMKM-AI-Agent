@@ -27,6 +27,9 @@ app = FastAPI(title=settings.PROJECT_NAME)
 
 os.makedirs("static/images", exist_ok=True)
 
+UPLOAD_DIR = "uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.add_middleware(
@@ -189,16 +192,16 @@ def reset_chat_history(
 @app.post("/api/upload")
 async def upload_file(file: UploadFile = File(...), db: Session = Depends(get_db)):
     try:
-        file_path = f"temp_{file.filename}"
+        file_path = os.path.join(UPLOAD_DIR, file.filename)
+
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        file_ext = file.filename.split(".")[-1]
+        file_ext = file.filename.split(".")[-1].lower()
 
         result_msg = process_document(file_path, file_ext)
-        os.remove(file_path)
 
-        return {"status": "success", "message": f"file: {file.filename} berhasil dipelajari {result_msg}"}
+        return {"status": "success", "message": result_msg}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
