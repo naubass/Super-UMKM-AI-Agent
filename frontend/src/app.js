@@ -223,7 +223,33 @@ async function loadHistory(sessionId) {
                 chatContainer.appendChild(welcome);
             } else {
                 chats.forEach(chat => {
-                    chatContainer.appendChild(createChatBubble(chat.role, chat.content));
+                    // Ambil mode dari database
+                    let mode = chat.task_type || "UMUM";
+
+                    // JIKA DATABASE TIDAK PUNYA DATA (UMUM), KITA TEBAK SENDIRI (AUTO-DETECT)
+                    if (mode === "UMUM" && chat.role === 'assistant') {
+                        const text = chat.content;
+
+                        // Deteksi Mode JADWAL (Ciri: Ada tabel markdown dengan kolom Hari/Ide)
+                        if (text.includes("| Hari |") || text.includes("| Ide Konten |")) {
+                            mode = "JADWAL";
+                        }
+                        // Deteksi Mode SPY (Ciri: Ada kata kunci laporan spy)
+                        else if (text.includes("🕵️ **Target**:") || text.includes("Reputasi Online")) {
+                            mode = "SPY";
+                        }
+                        // Deteksi Mode SEO (Ciri: Format Judul & Deskripsi)
+                        else if (text.includes("🏷️ JUDUL PRODUK") || text.includes("📝 DESKRIPSI PRODUK")) {
+                            mode = "SEO";
+                        }
+                        // Deteksi Mode DATA/Excel (Ciri: Jawaban Data Analyst)
+                        else if (text.includes("Total Baris:") || text.includes("CONTEXT DATA")) {
+                            mode = "DATA";
+                        }
+                    }
+
+                    // Render dengan mode yang sudah ditebak
+                    chatContainer.appendChild(createChatBubble(chat.role, chat.content, mode));
                 });
             }
             scrollToBottom(); 

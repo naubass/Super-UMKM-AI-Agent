@@ -65,3 +65,24 @@
     font-weight: 700;
     color: #1a202c;
 }
+
+/* Styling Tabel Markdown di dalam Chat */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 0.85rem;
+}
+th, td {
+    border: 1px solid #e2e8f0;
+    padding: 8px 12px;
+    text-align: left;
+}
+th {
+    background-color: #f8fafc;
+    font-weight: 600;
+    color: #334155;
+}
+tr:nth-child(even) {
+    background-color: #fcfcfc;
+}
