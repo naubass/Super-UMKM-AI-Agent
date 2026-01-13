@@ -1,5 +1,5 @@
 # 1. Gunakan Python versi ringan
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 # 2. Set folder kerja di dalam server
 WORKDIR /app
