@@ -1,6 +1,7 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
+    DATABASE_URL: str = "mysql+pymysql://user_local:password_local@db:3306/umkm_db_local"
     PROJECT_NAME: str = "SUPER UMKM AI AGENT"
     VERSION: str = "1.0.0"
     GROQ_API_KEY: str
